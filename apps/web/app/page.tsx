@@ -27,7 +27,7 @@ export default function LandingPage() {
           <div className="flex items-center gap-2">
             <Link href="/" className="flex items-center gap-2">
               <Shapes className="h-8 w-8 text-purple-500" />
-              <span className="font-heading text-2xl font-bold">Excalidraw Clone</span>
+              <span className="font-heading text-2xl font-bold">Draw It</span>
             </Link>
           </div>
 
@@ -353,7 +353,7 @@ export default function LandingPage() {
           <div className="flex flex-col gap-2">
             <Link href="/" className="flex items-center gap-2">
               <Shapes className="h-6 w-6 text-purple-500" />
-              <span className="font-heading font-bold text-lg">Excalidraw Clone</span>
+              <span className="font-heading font-bold text-lg">Draw It</span>
             </Link>
             <p className="text-sm text-zinc-400 mt-2">A virtual whiteboard for sketching hand-drawn like diagrams.</p>
             <div className="flex gap-4 mt-4">
@@ -458,64 +458,3 @@ export default function LandingPage() {
     </div>
   )
 }
-
-
-// export default function Home() {
-
-//   const router = useRouter();
-//   const inpRef = useRef<HTMLInputElement>(null);
-//   type schemaType = z.infer<typeof CreateRoomSchema>;
-  
-  
-//   async function createRoom() {
-//     if(!inpRef.current || inpRef.current.value.length === 0) {
-//       return;
-//     }
-//     const room: schemaType = {
-//       roomId: inpRef.current.value
-//     };
-//     const token = localStorage.getItem('token');
-//     const createRoom = await axios.post('http://localhost:3001/create-room', room, {headers: { authHeader: token }});
-//     if(createRoom.data.error) {
-//       console.log('Error occured');
-//       return;
-//     }
-//     router.push(`/room/${room.roomId}`)
-//   }
-
-//   async function joinRoom() {
-//     if(!inpRef.current || inpRef.current.value.length === 0) {
-//       return;
-//     }
-//     const room: schemaType = {
-//       roomId: inpRef.current.value
-//     };
-//     const token = localStorage.getItem('token');
-//     const createRoom = await axios.post('http://localhost:3001/join-room', room, {headers: { authHeader: token }});
-//     if(createRoom.data.error) {
-//       console.log('Error occured');
-//       return;
-//     }
-//     router.push(`/room/${room.roomId}`)
-//   }
-
-//   return (
-//     <div className={styles.page}>
-//       <main className="w-full flex justify-center">
-//         <h1 className={styles.heading}>Join a Room to start chatting!</h1>
-//         <div className="flex flex-col gap-4 justify-center items-center mt-12 w-5xl">
-//           <div>
-//             <div>
-//               <InputBox placeholder="Enter Room ID" ref={inpRef} type="text" className={styles.primary!} purpose="send" />
-//             </div>
-//             <div className="flex gap-5 mt-4">
-//               <Button children={'Create Room'} className={styles.primary} onClick={createRoom} />
-//               <Button children={'Join Room'} className={styles.primary} onClick={joinRoom} />
-//             </div>
-//           </div>
-          
-//         </div>
-//       </main>
-//     </div>
-//   );
-// }
