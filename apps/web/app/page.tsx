@@ -1,102 +1,521 @@
-import Image, { type ImageProps } from "next/image";
+"use client";
 import { Button } from "@repo/ui/button";
-import styles from "./page.module.css";
+import Link from "next/link"
 
-type Props = Omit<ImageProps, "src"> & {
-  srcLight: string;
-  srcDark: string;
-};
+import {
+  Github,
+  Twitter,
+  Pencil,
+  Share2,
+  Users,
+  Lock,
+  Download,
+  Layers,
+  Palette,
+  Shapes,
+  ArrowRight,
+  Code,
+  Globe,
+} from "lucide-react"
 
-const ThemeImage = (props: Props) => {
-  const { srcLight, srcDark, ...rest } = props;
-
+export default function LandingPage() {
   return (
-    <>
-      <Image {...rest} src={srcLight} className="imgLight" />
-      <Image {...rest} src={srcDark} className="imgDark" />
-    </>
-  );
-};
+    <div className="min-h-screen bg-zinc-900 text-zinc-100 font-sans">
+      {/* Header */}
+      <header className="border-b border-zinc-800 bg-zinc-900/95 backdrop-blur supports-[backdrop-filter]:bg-zinc-900/80 sticky top-0 z-40 sm:px-10 md:px-15 lg-px-20">
+        <div className="container flex h-16 items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Link href="/" className="flex items-center gap-2">
+              <Shapes className="h-8 w-8 text-purple-500" />
+              <span className="font-heading text-2xl font-bold">Excalidraw Clone</span>
+            </Link>
+          </div>
 
-export default function Home() {
-  return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <ThemeImage
-          className={styles.logo}
-          srcLight="turborepo-dark.svg"
-          srcDark="turborepo-light.svg"
-          alt="Turborepo logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol>
-          <li>
-            Get started by editing <code>apps/web/app/page.tsx</code>
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
-
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new/clone?demo-description=Learn+to+implement+a+monorepo+with+a+two+Next.js+sites+that+has+installed+three+local+packages.&demo-image=%2F%2Fimages.ctfassets.net%2Fe5382hct74si%2F4K8ZISWAzJ8X1504ca0zmC%2F0b21a1c6246add355e55816278ef54bc%2FBasic.png&demo-title=Monorepo+with+Turborepo&demo-url=https%3A%2F%2Fexamples-basic-web.vercel.sh%2F&from=templates&project-name=Monorepo+with+Turborepo&repository-name=monorepo-turborepo&repository-url=https%3A%2F%2Fgithub.com%2Fvercel%2Fturborepo%2Ftree%2Fmain%2Fexamples%2Fbasic&root-directory=apps%2Fdocs&skippable-integrations=1&teamSlug=vercel&utm_source=create-turbo"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            href="https://turbo.build/docs?utm_source"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.secondary}
-          >
-            Read our docs
-          </a>
+          <div className="flex items-center gap-3">
+            <Link href={'/signin'}>
+              <Button variant="ghost" size="sm" className="hover:bg-zinc-800 hover:text-purple-400">
+                Log in
+              </Button>
+            </Link>
+            <Link href={'/signup'}>
+              <Button variant="primary" size="sm" className="bg-purple-600 hover:bg-purple-700">
+                Sign Up
+              </Button>
+            </Link>
+            {/* <Button variant="ghost" size="icon" className="md:hidden">
+              <Menu className="h-5 w-5" />
+              <span className="sr-only">Toggle menu</span>
+            </Button> */}
+          </div>
         </div>
-        <Button appName="web" className={styles.secondary}>
-          Open alert
-        </Button>
-      </main>
-      <footer className={styles.footer}>
-        <a
-          href="https://vercel.com/templates?search=turborepo&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          href="https://turbo.build?utm_source=create-turbo"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to turbo.build →
-        </a>
+      </header>
+
+      {/* Hero Section */}
+      <section className="container py-16 md:py-24 lg:py-32 sm:px-10 md:px-15 lg-px-20">
+        <div className="grid gap-10 lg:grid-cols-[1fr_400px] lg:gap-12 xl:grid-cols-[1fr_600px]">
+          <div className="flex flex-col justify-center space-y-6">
+            <div className="space-y-4">
+              <h1 className="font-heading text-4xl font-bold tracking-tight sm:text-5xl xl:text-6xl/none">
+                Create, Collaborate,
+                <span className="text-purple-500 block mt-1">Share Your Ideas</span>
+              </h1>
+              <p className="max-w-[600px] text-zinc-300 text-lg md:text-xl leading-relaxed">
+                A powerful virtual whiteboard for sketching diagrams, wireframes, and illustrations. Collaborate in
+                real-time with your team and bring your ideas to life.
+              </p>
+
+              <div className="flex flex-wrap gap-3 pt-2">
+                <div className="flex items-center gap-2 bg-zinc-800/50 px-3 py-1 rounded-full text-sm text-zinc-300">
+                  <Pencil className="h-4 w-4 text-purple-400" />
+                  <span>Intuitive Drawing</span>
+                </div>
+                <div className="flex items-center gap-2 bg-zinc-800/50 px-3 py-1 rounded-full text-sm text-zinc-300">
+                  <Users className="h-4 w-4 text-blue-400" />
+                  <span>Real-time Collaboration</span>
+                </div>
+                <div className="flex items-center gap-2 bg-zinc-800/50 px-3 py-1 rounded-full text-sm text-zinc-300">
+                  <Lock className="h-4 w-4 text-green-400" />
+                  <span>End-to-End Encryption</span>
+                </div>
+              </div>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-3 pt-2">
+              <Button variant="primary" size="lg" className="bg-purple-600 hover:bg-purple-700 transition-all group">
+                Start Drawing
+                <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+              </Button>
+              <Button size="lg" variant="outline" className="border-zinc-700 hover:bg-zinc-800">
+                <Github className="mr-2 h-4 w-4" />
+                View on GitHub
+              </Button>
+            </div>
+          </div>
+          <div className="mx-auto flex w-full items-center justify-center lg:justify-end">
+            <div className="relative h-[300px] w-full overflow-hidden rounded-lg border border-zinc-800 bg-zinc-950 p-2 md:h-[400px] group shadow-lg shadow-purple-500/5">
+              {/* Canvas Preview */}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="grid grid-cols-2 gap-4 p-4">
+                  <div className="h-20 w-20 rounded-md bg-purple-500/20 border border-purple-500/30 transition-transform group-hover:rotate-3 duration-300"></div>
+                  <div className="h-20 w-20 rounded-full bg-blue-500/20 border border-blue-500/30 transition-transform group-hover:-rotate-3 duration-300"></div>
+                  <div className="h-20 w-40 col-span-2 rounded-lg bg-green-500/20 border border-green-500/30 transition-transform group-hover:translate-y-1 duration-300"></div>
+                  <div className="h-1 w-32 col-span-2 bg-zinc-700 transition-transform group-hover:translate-x-2 duration-300"></div>
+                  <div className="h-1 w-20 col-span-1 bg-zinc-700 transition-transform group-hover:translate-x-1 duration-300"></div>
+                </div>
+              </div>
+
+              {/* Toolbar */}
+              <div className="absolute bottom-2 right-2 flex gap-2">
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="h-8 w-8 rounded-full bg-zinc-800/80 hover:bg-purple-500/20 hover:text-purple-400 transition-colors"
+                >
+                  <Pencil className="h-4 w-4" />
+                </Button>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="h-8 w-8 rounded-full bg-zinc-800/80 hover:bg-blue-500/20 hover:text-blue-400 transition-colors"
+                >
+                  <Palette className="h-4 w-4" />
+                </Button>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="h-8 w-8 rounded-full bg-zinc-800/80 hover:bg-green-500/20 hover:text-green-400 transition-colors"
+                >
+                  <Shapes className="h-4 w-4" />
+                </Button>
+              </div>
+
+              {/* Cursor Animation */}
+              <div
+                className="absolute h-6 w-6 rounded-full border-2 border-white opacity-70 animate-ping"
+                style={{ top: "30%", left: "40%" }}
+              ></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section id="features" className="py-16 md:py-24 lg:py-32 border-t border-zinc-800 bg-zinc-950/50">
+        <div className="container">
+          <div className="mx-auto flex max-w-[58rem] flex-col items-center justify-center gap-4 text-center mb-16">
+            <h2 className="font-heading text-3xl font-bold leading-tight sm:text-4xl md:text-5xl">
+              Powerful features for your creativity
+            </h2>
+            <p className="max-w-[85%] leading-relaxed text-zinc-300 text-lg">
+              Everything you need to create beautiful sketches and collaborate with your team.
+            </p>
+          </div>
+
+          <div className="mx-auto grid justify-center gap-6 sm:grid-cols-2 md:max-w-[64rem] md:grid-cols-3 lg:gap-10">
+            {/* Feature 1 */}
+            <div className="relative overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900/50 p-8 transition-all duration-300 hover:border-purple-500/30 group">
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-purple-500/10 text-purple-500 mb-5 transition-transform group-hover:scale-110 duration-300">
+                <Pencil className="h-7 w-7" />
+              </div>
+              <h3 className="text-xl font-heading font-bold mb-3">Intuitive Drawing</h3>
+              <p className="text-zinc-300 leading-relaxed">
+                Simple yet powerful drawing tools that feel natural and responsive. Create sketches that look
+                hand-drawn.
+              </p>
+              <div className="mt-5">
+                <Button
+                  variant="link"
+                  size="lg"
+                  className="p-0 h-auto text-purple-400 group-hover:text-purple-300 transition-colors"
+                >
+                  Learn more <ArrowRight className="ml-1 h-3 w-3 inline" />
+                </Button>
+              </div>
+            </div>
+
+            {/* Feature 2 */}
+            <div className="relative overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900/50 p-8 transition-all duration-300 hover:border-blue-500/30 group">
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-blue-500/10 text-blue-500 mb-5 transition-transform group-hover:scale-110 duration-300">
+                <Users className="h-7 w-7" />
+              </div>
+              <h3 className="text-xl font-heading font-bold mb-3">Real-time Collaboration</h3>
+              <p className="text-zinc-300 leading-relaxed">
+                Work together with your team in real-time. See changes as they happen and collaborate seamlessly.
+              </p>
+              <div className="mt-5">
+                <Button variant="link" size="lg" className="p-0 h-auto text-blue-400 group-hover:text-blue-300 transition-colors">
+                  Learn more <ArrowRight className="ml-1 h-3 w-3 inline" />
+                </Button>
+              </div>
+            </div>
+
+            {/* Feature 3 */}
+            <div className="relative overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900/50 p-8 transition-all duration-300 hover:border-green-500/30 group">
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-green-500/10 text-green-500 mb-5 transition-transform group-hover:scale-110 duration-300">
+                <Lock className="h-7 w-7" />
+              </div>
+              <h3 className="text-xl font-heading font-bold mb-3">End-to-End Encryption</h3>
+              <p className="text-zinc-300 leading-relaxed">
+                Your data is encrypted and secure. We can't see your drawings, ensuring complete privacy.
+              </p>
+              <div className="mt-5">
+                <Button
+                  variant="link"
+                  size="lg"
+                  className="p-0 h-auto text-green-400 group-hover:text-green-300 transition-colors"
+                >
+                  Learn more <ArrowRight className="ml-1 h-3 w-3 inline" />
+                </Button>
+              </div>
+            </div>
+
+            {/* Feature 4 */}
+            <div className="relative overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900/50 p-8 transition-all duration-300 hover:border-yellow-500/30 group">
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-yellow-500/10 text-yellow-500 mb-5 transition-transform group-hover:scale-110 duration-300">
+                <Share2 className="h-7 w-7" />
+              </div>
+              <h3 className="text-xl font-heading font-bold mb-3">Easy Sharing</h3>
+              <p className="text-zinc-300 leading-relaxed">
+                Share your drawings with a simple link. No account required. Perfect for quick collaboration.
+              </p>
+              <div className="mt-5">
+                <Button
+                  variant="link"
+                  size="lg"
+                  className="p-0 h-auto text-yellow-400 group-hover:text-yellow-300 transition-colors"
+                >
+                  Learn more <ArrowRight className="ml-1 h-3 w-3 inline" />
+                </Button>
+              </div>
+            </div>
+
+            {/* Feature 5 */}
+            <div className="relative overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900/50 p-8 transition-all duration-300 hover:border-red-500/30 group">
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-red-500/10 text-red-500 mb-5 transition-transform group-hover:scale-110 duration-300">
+                <Download className="h-7 w-7" />
+              </div>
+              <h3 className="text-xl font-heading font-bold mb-3">Export Options</h3>
+              <p className="text-zinc-300 leading-relaxed">
+                Export your drawings as PNG, SVG, or even as a shareable link. Use your creations anywhere.
+              </p>
+              <div className="mt-5">
+                <Button variant="link" size="lg" className="p-0 h-auto text-red-400 group-hover:text-red-300 transition-colors">
+                  Learn more <ArrowRight className="ml-1 h-3 w-3 inline" />
+                </Button>
+              </div>
+            </div>
+
+            {/* Feature 6 */}
+            <div className="relative overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900/50 p-8 transition-all duration-300 hover:border-indigo-500/30 group">
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-indigo-500/10 text-indigo-500 mb-5 transition-transform group-hover:scale-110 duration-300">
+                <Layers className="h-7 w-7" />
+              </div>
+              <h3 className="text-xl font-heading font-bold mb-3">Libraries & Templates</h3>
+              <p className="text-zinc-300 leading-relaxed">
+                Access a wide range of shapes, templates, and libraries to speed up your work and enhance creativity.
+              </p>
+              <div className="mt-5">
+                <Button
+                  variant="link"
+                  size="lg"
+                  className="p-0 h-auto text-indigo-400 group-hover:text-indigo-300 transition-colors"
+                >
+                  Learn more <ArrowRight className="ml-1 h-3 w-3 inline" />
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Use Cases Section */}
+      <section className="container py-16 md:py-24 lg:py-32 sm:px-10 md:px-15 lg-px-20">
+        <div className="mx-auto flex max-w-[58rem] flex-col items-center justify-center gap-4 text-center mb-16">
+          <h2 className="font-heading text-3xl font-bold leading-tight sm:text-4xl md:text-5xl">
+            Perfect for every creative need
+          </h2>
+          <p className="max-w-[85%] leading-relaxed text-zinc-300 text-lg">
+            From wireframes to diagrams, our tool adapts to your creative process.
+          </p>
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-8">
+          {/* Use Case 1 */}
+          <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-6 transition-all hover:border-purple-500/20 hover:bg-zinc-900/70">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="bg-purple-500/10 text-purple-500 p-2 rounded-lg">
+                <Code className="h-5 w-5" />
+              </div>
+              <h3 className="font-heading font-bold text-lg">UI/UX Design</h3>
+            </div>
+            <p className="text-zinc-300">
+              Create wireframes and mockups for your next digital product with our intuitive tools.
+            </p>
+          </div>
+
+          {/* Use Case 2 */}
+          <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-6 transition-all hover:border-blue-500/20 hover:bg-zinc-900/70">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="bg-blue-500/10 text-blue-500 p-2 rounded-lg">
+                <Users className="h-5 w-5" />
+              </div>
+              <h3 className="font-heading font-bold text-lg">Team Brainstorming</h3>
+            </div>
+            <p className="text-zinc-300">
+              Collaborate with your team in real-time to generate and visualize ideas together.
+            </p>
+          </div>
+
+          {/* Use Case 3 */}
+          <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-6 transition-all hover:border-green-500/20 hover:bg-zinc-900/70">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="bg-green-500/10 text-green-500 p-2 rounded-lg">
+                <Globe className="h-5 w-5" />
+              </div>
+              <h3 className="font-heading font-bold text-lg">Remote Workshops</h3>
+            </div>
+            <p className="text-zinc-300">
+              Run engaging remote workshops with a shared visual canvas that everyone can contribute to.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-16 md:py-24 lg:py-32 border-t border-zinc-800 bg-zinc-950/50 sm:px-10 md:px-15 lg-px-20">
+        <div className="container">
+          <div className="mx-auto max-w-[58rem] flex flex-col items-center justify-center gap-6 text-center">
+            <h2 className="font-heading text-3xl font-bold leading-tight sm:text-4xl md:text-5xl">
+              Ready to start drawing?
+            </h2>
+            <p className="max-w-[85%] leading-relaxed text-zinc-300 text-lg">
+              Try our platform today. No sign-up required. It's completely free for personal use.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 mt-4">
+              <Button variant="primary" size="lg" className="bg-purple-600 hover:bg-purple-700 transition-all group">
+                Start Drawing Now
+                <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+              </Button>
+              <Button size="lg" variant="outline" className="border-zinc-700 hover:bg-zinc-800">
+                View Documentation
+              </Button>
+            </div>
+            <div className="mt-6 text-zinc-400 text-sm flex items-center gap-2">
+              <Lock className="h-4 w-4" />
+              No credit card required. No strings attached.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="border-t border-zinc-800 bg-zinc-950 py-12 sm:px-10 md:px-15 lg-px-20">
+        <div className="container grid gap-8 md:grid-cols-2 lg:grid-cols-4">
+          <div className="flex flex-col gap-2">
+            <Link href="/" className="flex items-center gap-2">
+              <Shapes className="h-6 w-6 text-purple-500" />
+              <span className="font-heading font-bold text-lg">Excalidraw Clone</span>
+            </Link>
+            <p className="text-sm text-zinc-400 mt-2">A virtual whiteboard for sketching hand-drawn like diagrams.</p>
+            <div className="flex gap-4 mt-4">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="rounded-full h-8 w-8 hover:bg-zinc-800 hover:text-purple-400 transition-colors"
+              >
+                <Twitter className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="rounded-full h-8 w-8 hover:bg-zinc-800 hover:text-purple-400 transition-colors"
+              >
+                <Github className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+          <div>
+            <h3 className="text-lg font-heading font-medium mb-4">Product</h3>
+            <ul className="space-y-2 text-sm text-zinc-400">
+              <li>
+                <Button variant="link" size="lg" className="p-0 h-auto text-zinc-400 hover:text-purple-400 transition-colors">
+                  Features
+                </Button>
+              </li>
+              <li>
+                <Button variant="link" size="lg" className="p-0 h-auto text-zinc-400 hover:text-purple-400 transition-colors">
+                  Pricing
+                </Button>
+              </li>
+              <li>
+                <Button variant="link" size="lg" className="p-0 h-auto text-zinc-400 hover:text-purple-400 transition-colors">
+                  Integrations
+                </Button>
+              </li>
+              <li>
+                <Button variant="link" size="lg" className="p-0 h-auto text-zinc-400 hover:text-purple-400 transition-colors">
+                  Changelog
+                </Button>
+              </li>
+            </ul>
+          </div>
+          <div>
+            <h3 className="text-lg font-heading font-medium mb-4">Resources</h3>
+            <ul className="space-y-2 text-sm text-zinc-400">
+              <li>
+                <Button variant="link" size="lg" className="p-0 h-auto text-zinc-400 hover:text-purple-400 transition-colors">
+                  Documentation
+                </Button>
+              </li>
+              <li>
+                <Button variant="link" size="lg" className="p-0 h-auto text-zinc-400 hover:text-purple-400 transition-colors">
+                  Tutorials
+                </Button>
+              </li>
+              <li>
+                <Button variant="link" size="lg" className="p-0 h-auto text-zinc-400 hover:text-purple-400 transition-colors">
+                  Blog
+                </Button>
+              </li>
+              <li>
+                <Button variant="link" size="lg" className="p-0 h-auto text-zinc-400 hover:text-purple-400 transition-colors">
+                  Community
+                </Button>
+              </li>
+            </ul>
+          </div>
+          <div>
+            <h3 className="text-lg font-heading font-medium mb-4">Company</h3>
+            <ul className="space-y-2 text-sm text-zinc-400">
+              <li>
+                <Button variant="link" size="lg" className="p-0 h-auto text-zinc-400 hover:text-purple-400 transition-colors">
+                  About
+                </Button>
+              </li>
+              <li>
+                <Button variant="link" size="lg" className="p-0 h-auto text-zinc-400 hover:text-purple-400 transition-colors">
+                  Careers
+                </Button>
+              </li>
+              <li>
+                <Button variant="link" size="lg" className="p-0 h-auto text-zinc-400 hover:text-purple-400 transition-colors">
+                  Privacy Policy
+                </Button>
+              </li>
+              <li>
+                <Button variant="link" size="lg" className="p-0 h-auto text-zinc-400 hover:text-purple-400 transition-colors">
+                  Terms of Service
+                </Button>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div className="container mt-12 border-t border-zinc-800 pt-6">
+          <p className="text-center text-sm text-zinc-400">
+            © {new Date().getFullYear()} Excalidraw Clone. All rights reserved.
+          </p>
+        </div>
       </footer>
     </div>
-  );
+  )
 }
+
+
+// export default function Home() {
+
+//   const router = useRouter();
+//   const inpRef = useRef<HTMLInputElement>(null);
+//   type schemaType = z.infer<typeof CreateRoomSchema>;
+  
+  
+//   async function createRoom() {
+//     if(!inpRef.current || inpRef.current.value.length === 0) {
+//       return;
+//     }
+//     const room: schemaType = {
+//       roomId: inpRef.current.value
+//     };
+//     const token = localStorage.getItem('token');
+//     const createRoom = await axios.post('http://localhost:3001/create-room', room, {headers: { authHeader: token }});
+//     if(createRoom.data.error) {
+//       console.log('Error occured');
+//       return;
+//     }
+//     router.push(`/room/${room.roomId}`)
+//   }
+
+//   async function joinRoom() {
+//     if(!inpRef.current || inpRef.current.value.length === 0) {
+//       return;
+//     }
+//     const room: schemaType = {
+//       roomId: inpRef.current.value
+//     };
+//     const token = localStorage.getItem('token');
+//     const createRoom = await axios.post('http://localhost:3001/join-room', room, {headers: { authHeader: token }});
+//     if(createRoom.data.error) {
+//       console.log('Error occured');
+//       return;
+//     }
+//     router.push(`/room/${room.roomId}`)
+//   }
+
+//   return (
+//     <div className={styles.page}>
+//       <main className="w-full flex justify-center">
+//         <h1 className={styles.heading}>Join a Room to start chatting!</h1>
+//         <div className="flex flex-col gap-4 justify-center items-center mt-12 w-5xl">
+//           <div>
+//             <div>
+//               <InputBox placeholder="Enter Room ID" ref={inpRef} type="text" className={styles.primary!} purpose="send" />
+//             </div>
+//             <div className="flex gap-5 mt-4">
+//               <Button children={'Create Room'} className={styles.primary} onClick={createRoom} />
+//               <Button children={'Join Room'} className={styles.primary} onClick={joinRoom} />
+//             </div>
+//           </div>
+          
+//         </div>
+//       </main>
+//     </div>
+//   );
+// }

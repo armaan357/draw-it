@@ -1,0 +1,12 @@
+:root {
+  --bg-default: 0 0 0;
+  --bg-info: 29 78 216;
+  --bg-success: 21 128 61;
+  --bg-attention: 194 65 12;
+  --bg-error: 185 28 28;
+
+  --content-info: 191 219 254;
+  --content-success: 220 252 231;
+  --content-attention: 255 237 213;
+  --content-error: 254 226 226;
+}

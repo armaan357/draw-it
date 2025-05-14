@@ -11,18 +11,32 @@
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
+    "@repo/tailwind-config": "workspace:*",
     "@repo/ui": "workspace:*",
+    "axios": "^1.9.0",
+    "dotenv": "^16.5.0",
+    "dotenv-flow": "^4.1.0",
+    "dotenv-flow-cli": "^1.1.1",
+    "lucide-react": "^0.510.0",
     "next": "^15.3.0",
+    "postcss": "^8.5.3",
     "react": "^19.1.0",
-    "react-dom": "^19.1.0"
+    "react-dom": "^19.1.0",
+    "tailwindcss": "^4.1.4",
+    "zod": "^3.24.3"
   },
   "devDependencies": {
+    "@repo/common": "workspace:*",
     "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@types/node": "^22.14.0",
     "@types/react": "19.1.0",
     "@types/react-dom": "19.1.1",
+    "autoprefixer": "^10.4.16",
     "eslint": "^9.24.0",
+    "postcss": "^8.4.31",
+    "postcss-import": "^15.1.0",
+    "tailwindcss": "^3.4.4",
     "typescript": "5.8.2"
   }
 }

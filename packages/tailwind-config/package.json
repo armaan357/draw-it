@@ -1,0 +1,23 @@
+{
+  "name": "@repo/tailwind-config",
+  "version": "0.0.8",
+  "main": "index.ts",
+  "types": "index.ts",
+  "devDependencies": {
+    "tailwindcss": "^3.4.17"
+  },
+  "dependencies": {
+    "@tailwindcss/forms": "^0.5.6",
+    "@tailwindcss/postcss": "^4.1.4",
+    "@tailwindcss/typography": "^0.5.9",
+    "postcss": "^8.5.3"
+  },
+  "author": "",
+  "repository": {
+    "type": "git"
+  },
+  "keywords": [],
+  "publishConfig": {
+    "access": "public"
+  }
+}

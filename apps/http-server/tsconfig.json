@@ -1,0 +1,15 @@
+{
+    "extends": "@repo/typescript-config/base.json",
+    "compilerOptions": {
+        "rootDir": "./src",
+        "outDir": "./dist",
+        "typeRoots": [
+            "./node_modules/@types",
+            "./@types"
+        ]
+    }
+}
+
+// "@repo/db": "workspace:*",
+//     "prisma:generate": "dotenv-flow -e .env -- pnpm --filter=@repo/db generate",
+//     "prisma:migrate": "dotenv-flow -e .env -- pnpm --filter=@repo/db migrate"
