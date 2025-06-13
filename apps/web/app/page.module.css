@@ -1,5 +1,5 @@
-/* @import "tailwindcss"; */
-.page {
+@import "tailwindcss";
+/* .page {
   --gray-rgb: 0, 0, 0;
   --gray-alpha-200: rgba(var(--gray-rgb), 0.08);
   --gray-alpha-100: rgba(var(--gray-rgb), 0.05);
@@ -12,35 +12,6 @@
   width: 100dvw;
   font-synthesis: none;
   padding: 15px 30px;
-}
-input.primary {
-  width: 100%;
-  background: darkgray;
-  border-radius: 128px;
-  outline: none;
-  border: none;
-  font-size: medium;
-  color: #1a1a1a;
-  padding: 12px 24px;
-  transition: background 0.2s, color 0.2s, border-color 0.2s;
-}
-
-input:hover{
-  background-color: gray;
-}
-
-input.send {
-  transition: background 0.2s, color 0.2s, border-color 0.2s;
-  background: gray;
-  border-top-left-radius: 128px;
-  border-bottom-left-radius: 128px;
-  border-top-right-radius: 0px;
-  border-bottom-right-radius: 0px;
-  outline: none;
-  border: none;
-  font-size: medium;
-  color: white;
-  padding: 12px 24px;
 }
 
 .heading {
@@ -71,4 +42,4 @@ a.primary {
 a.secondary {
   border-color: var(--gray-alpha-200);
   min-width: 180px;
-}
+} */

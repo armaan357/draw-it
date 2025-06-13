@@ -10,7 +10,17 @@ datasource db {
 model Chats {
   id      Int    @id @default(autoincrement())
   timeStamp DateTime  @default(now())
-  message String
+  type    String
+  x       Int
+  y       Int
+  radX     Int?
+  radY     Int?
+  width   Int?
+  height  Int?
+  toX     Int?
+  toY     Int?
+  allCoordinates Json[] @default([])
+  text    String?
   userId  String
   roomId  Int
   Rooms   Rooms  @relation(fields: [roomId], references: [id])

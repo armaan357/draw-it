@@ -21,7 +21,21 @@ export const CreateRoomSchema = z.object({
     roomId: z.string()
 });
 
-export interface Imsg {
+export type shapesType = {
+    type: 'rect' | 'circle'| 'line' | 'draw' | 'text',
+    x: number;
+    y: number;
+    width?: number;
+    height?: number;
+    radX?: number;
+    radY?: number;
+    toX?: number;
+    toY?: number;
+    allCoordinates?: {x: number, y: number}[];
+    text?: string;
+}
+
+export type Imsg = {
     purpose: 'join' | 'leave' | 'chat';
     roomId: string;
     message?: string;

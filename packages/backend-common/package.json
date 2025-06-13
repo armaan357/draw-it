@@ -8,7 +8,8 @@
     "dev": "tsc -b && node dist/config.js"
   },
   "exports": {
-    "./config": "./src/config.ts"
+    "./config": "./src/config.ts",
+    "./auth": "./src/auth.ts"
   },
   "keywords": [],
   "author": "",
@@ -18,8 +19,18 @@
     "@types/node": "^22.14.0"
   },
   "dependencies": {
+    "@repo/db": "workspace:*",
+    "@types/bcrypt": "^5.0.2",
+    "@types/express-session": "^1.18.1",
+    "@types/passport": "^1.0.17",
+    "@types/passport-local": "^1.0.38",
+    "bcrypt": "^5.1.1",
     "dotenv": "^16.5.0",
     "dotenv-flow": "^4.1.0",
-    "dotenv-flow-cli": "^1.1.1"
+    "dotenv-flow-cli": "^1.1.1",
+    "express": "^5.1.0",
+    "express-session": "^1.18.1",
+    "passport": "^0.7.0",
+    "passport-local": "^1.0.0"
   }
 }

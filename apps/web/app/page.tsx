@@ -16,9 +16,26 @@ import {
   ArrowRight,
   Code,
   Globe,
+  Radio,
 } from "lucide-react"
+import { useEffect, useState } from "react";
+import axios from "axios";
+import { HTTP_URL } from "./utils";
 
 export default function LandingPage() {
+
+  const [ verified, setVerified ] = useState<boolean>(false);
+  useEffect(() => {
+    axios.get(`${HTTP_URL}/auth-me`, { withCredentials: true })
+      .then((resp) => {
+        console.log(resp);
+        setVerified(true);
+      })
+      .catch((e: any) => {
+        console.log("error = ", e);
+      })
+  }, []);
+
   return (
     <div className="min-h-screen bg-zinc-900 text-zinc-100 font-sans">
       {/* Header */}
@@ -31,22 +48,43 @@ export default function LandingPage() {
             </Link>
           </div>
 
-          <div className="flex items-center gap-3">
+          {!verified ? <div className="flex items-center gap-3">
             <Link href={'/signin'}>
-              <Button variant="ghost" size="sm" className="hover:bg-zinc-800 hover:text-purple-400">
-                Log in
-              </Button>
+              <Button 
+                variant="ghost"
+                size="sm"
+                className="hover:bg-zinc-800 hover:text-purple-400"
+                children='Log In'
+              />
             </Link>
             <Link href={'/signup'}>
-              <Button variant="primary" size="sm" className="bg-purple-600 hover:bg-purple-700">
-                Sign Up
-              </Button>
+              <Button 
+                variant="primary" 
+                size="sm" 
+                className="bg-purple-600 hover:bg-purple-700"
+                children='Sign Up' 
+              />
             </Link>
             {/* <Button variant="ghost" size="icon" className="md:hidden">
               <Menu className="h-5 w-5" />
               <span className="sr-only">Toggle menu</span>
             </Button> */}
+          </div> :
+          <div>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="hover:bg-red-700/50" 
+              children={'Log Out'} 
+              onClick = {
+                async () => { 
+                  const resp = await axios.get(`${HTTP_URL}/logout`, { withCredentials: true });
+                  console.log("logout resp = ", resp.data);
+                }
+              }
+            />
           </div>
+          }
         </div>
       </header>
 
@@ -73,21 +111,48 @@ export default function LandingPage() {
                   <Users className="h-4 w-4 text-blue-400" />
                   <span>Real-time Collaboration</span>
                 </div>
-                <div className="flex items-center gap-2 bg-zinc-800/50 px-3 py-1 rounded-full text-sm text-zinc-300">
-                  <Lock className="h-4 w-4 text-green-400" />
-                  <span>End-to-End Encryption</span>
-                </div>
               </div>
             </div>
             <div className="flex flex-col sm:flex-row gap-3 pt-2">
-              <Button variant="primary" size="lg" className="bg-purple-600 hover:bg-purple-700 transition-all group">
-                Start Drawing
-                <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-              </Button>
-              <Button size="lg" variant="outline" className="border-zinc-700 hover:bg-zinc-800">
-                <Github className="mr-2 h-4 w-4" />
-                View on GitHub
-              </Button>
+              <Link href={'/canvas'} >
+                <Button 
+                  variant="primary" 
+                  size="lg" 
+                  className="bg-purple-600 hover:bg-purple-700 transition-all group"
+                  children = {
+                    <>
+                      Start Drawing
+                      <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" /> 
+                    </>
+                  }
+                />
+              </Link>
+              <Link href={'/canvas/2'}>
+                <Button 
+                  size="lg" 
+                  variant="outline" 
+                  className="border-zinc-700 hover:bg-zinc-800"
+                  children={
+                    <>
+                      Collaborate Live
+                      <Radio className="mr-2 h-4 w-4" />
+                    </>
+                  }
+                />
+              </Link>
+              <Link href={'https://github.com/armaan357/draw-it'}>
+                <Button 
+                  size="lg" 
+                  variant="outline" 
+                  className="border-zinc-700 hover:bg-zinc-800"
+                  children={
+                    <>
+                      View on GitHub
+                      <Github className="mr-2 h-4 w-4" />
+                    </>
+                  }
+                />
+              </Link>
             </div>
           </div>
           <div className="mx-auto flex w-full items-center justify-center lg:justify-end">
@@ -109,23 +174,26 @@ export default function LandingPage() {
                   size="icon"
                   variant="ghost"
                   className="h-8 w-8 rounded-full bg-zinc-800/80 hover:bg-purple-500/20 hover:text-purple-400 transition-colors"
-                >
-                  <Pencil className="h-4 w-4" />
-                </Button>
+                  children={
+                    <Pencil className="h-4 w-4" />
+                  }
+                />
                 <Button
                   size="icon"
                   variant="ghost"
                   className="h-8 w-8 rounded-full bg-zinc-800/80 hover:bg-blue-500/20 hover:text-blue-400 transition-colors"
-                >
-                  <Palette className="h-4 w-4" />
-                </Button>
+                  children = {
+                    <Palette className="h-4 w-4" />
+                  }
+                />
                 <Button
                   size="icon"
                   variant="ghost"
                   className="h-8 w-8 rounded-full bg-zinc-800/80 hover:bg-green-500/20 hover:text-green-400 transition-colors"
-                >
-                  <Shapes className="h-4 w-4" />
-                </Button>
+                  children = {
+                    <Shapes className="h-4 w-4" />
+                  }
+                />
               </div>
 
               {/* Cursor Animation */}
@@ -166,9 +234,13 @@ export default function LandingPage() {
                   variant="link"
                   size="lg"
                   className="p-0 h-auto text-purple-400 group-hover:text-purple-300 transition-colors"
-                >
-                  Learn more <ArrowRight className="ml-1 h-3 w-3 inline" />
-                </Button>
+                  children = {
+                    <>
+                      Learn more
+                      <ArrowRight className="ml-1 h-3 w-3 inline" />
+                    </>
+                  }
+                />
               </div>
             </div>
 
@@ -182,9 +254,17 @@ export default function LandingPage() {
                 Work together with your team in real-time. See changes as they happen and collaborate seamlessly.
               </p>
               <div className="mt-5">
-                <Button variant="link" size="lg" className="p-0 h-auto text-blue-400 group-hover:text-blue-300 transition-colors">
-                  Learn more <ArrowRight className="ml-1 h-3 w-3 inline" />
-                </Button>
+                <Button 
+                  variant="link"
+                  size="lg"
+                  className="p-0 h-auto text-blue-400 group-hover:text-blue-300 transition-colors"
+                  children = {
+                    <>
+                      Learn more
+                      <ArrowRight className="ml-1 h-3 w-3 inline" />
+                    </>
+                  } 
+                />
               </div>
             </div>
 
@@ -193,18 +273,31 @@ export default function LandingPage() {
               <div className="flex h-14 w-14 items-center justify-center rounded-full bg-green-500/10 text-green-500 mb-5 transition-transform group-hover:scale-110 duration-300">
                 <Lock className="h-7 w-7" />
               </div>
-              <h3 className="text-xl font-heading font-bold mb-3">End-to-End Encryption</h3>
+              <h3 className="text-xl font-heading font-bold mb-3">Open Source</h3>
               <p className="text-zinc-300 leading-relaxed">
-                Your data is encrypted and secure. We can't see your drawings, ensuring complete privacy.
+                100% open source—explore the code, contribute, or star us on&nbsp;
+                <a
+                  href="https://github.com/armaan357/draw-it"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:underline duration-200 hover:text-green-300 transition-colors"
+                >
+                  GitHub
+                </a>
+                .
               </p>
               <div className="mt-5">
                 <Button
                   variant="link"
                   size="lg"
                   className="p-0 h-auto text-green-400 group-hover:text-green-300 transition-colors"
-                >
-                  Learn more <ArrowRight className="ml-1 h-3 w-3 inline" />
-                </Button>
+                  children = {
+                    <>
+                      Learn more
+                      <ArrowRight className="ml-1 h-3 w-3 inline" />
+                    </>
+                  }
+                />
               </div>
             </div>
 
@@ -215,16 +308,20 @@ export default function LandingPage() {
               </div>
               <h3 className="text-xl font-heading font-bold mb-3">Easy Sharing</h3>
               <p className="text-zinc-300 leading-relaxed">
-                Share your drawings with a simple link. No account required. Perfect for quick collaboration.
+                Share your drawings with a simple link. Just Login and share. Perfect for quick collaboration.
               </p>
               <div className="mt-5">
                 <Button
                   variant="link"
                   size="lg"
                   className="p-0 h-auto text-yellow-400 group-hover:text-yellow-300 transition-colors"
-                >
-                  Learn more <ArrowRight className="ml-1 h-3 w-3 inline" />
-                </Button>
+                  children = {
+                    <>
+                      Learn more
+                      <ArrowRight className="ml-1 h-3 w-3 inline" />
+                    </>
+                  }
+                />
               </div>
             </div>
 
@@ -238,9 +335,17 @@ export default function LandingPage() {
                 Export your drawings as PNG, SVG, or even as a shareable link. Use your creations anywhere.
               </p>
               <div className="mt-5">
-                <Button variant="link" size="lg" className="p-0 h-auto text-red-400 group-hover:text-red-300 transition-colors">
-                  Learn more <ArrowRight className="ml-1 h-3 w-3 inline" />
-                </Button>
+                <Button 
+                  variant="link"
+                  size="lg"
+                  className="p-0 h-auto text-red-400 group-hover:text-red-300 transition-colors"
+                  children = {
+                    <>
+                      Learn more
+                      <ArrowRight className="ml-1 h-3 w-3 inline" />
+                    </>
+                  }
+                />
               </div>
             </div>
 
@@ -258,9 +363,13 @@ export default function LandingPage() {
                   variant="link"
                   size="lg"
                   className="p-0 h-auto text-indigo-400 group-hover:text-indigo-300 transition-colors"
-                >
-                  Learn more <ArrowRight className="ml-1 h-3 w-3 inline" />
-                </Button>
+                  children = {
+                    <>
+                      Learn more
+                      <ArrowRight className="ml-1 h-3 w-3 inline" />
+                    </>
+                  }
+                />
               </div>
             </div>
           </div>
@@ -331,13 +440,23 @@ export default function LandingPage() {
               Try our platform today. No sign-up required. It's completely free for personal use.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 mt-4">
-              <Button variant="primary" size="lg" className="bg-purple-600 hover:bg-purple-700 transition-all group">
-                Start Drawing Now
-                <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-              </Button>
-              <Button size="lg" variant="outline" className="border-zinc-700 hover:bg-zinc-800">
-                View Documentation
-              </Button>
+              <Button 
+                variant="primary"
+                size="lg"
+                className="bg-purple-600 hover:bg-purple-700 transition-all group"
+                children = {
+                  <>
+                    Start Drawing Now
+                  <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                  </>
+                }
+              />
+              <Button 
+                size="lg"
+                variant="outline"
+                className="border-zinc-700 hover:bg-zinc-800"
+                children = 'View Documentation'
+              />
             </div>
             <div className="mt-6 text-zinc-400 text-sm flex items-center gap-2">
               <Lock className="h-4 w-4" />
@@ -361,40 +480,50 @@ export default function LandingPage() {
                 variant="ghost"
                 size="icon"
                 className="rounded-full h-8 w-8 hover:bg-zinc-800 hover:text-purple-400 transition-colors"
-              >
-                <Twitter className="h-4 w-4" />
-              </Button>
+                children = {<Twitter className="h-4 w-4" />}
+              />
               <Button
                 variant="ghost"
                 size="icon"
                 className="rounded-full h-8 w-8 hover:bg-zinc-800 hover:text-purple-400 transition-colors"
-              >
-                <Github className="h-4 w-4" />
-              </Button>
+                children = { <Github className="h-4 w-4" /> }
+              />
             </div>
           </div>
           <div>
             <h3 className="text-lg font-heading font-medium mb-4">Product</h3>
             <ul className="space-y-2 text-sm text-zinc-400">
               <li>
-                <Button variant="link" size="lg" className="p-0 h-auto text-zinc-400 hover:text-purple-400 transition-colors">
-                  Features
-                </Button>
+                <Button 
+                  variant="link" 
+                  size="lg" 
+                  className="p-0 h-auto text-zinc-400 hover:text-purple-400 transition-colors"
+                  children = {'Features'} 
+                />
               </li>
               <li>
-                <Button variant="link" size="lg" className="p-0 h-auto text-zinc-400 hover:text-purple-400 transition-colors">
-                  Pricing
-                </Button>
+                <Button 
+                  variant="link" 
+                  size="lg" 
+                  className="p-0 h-auto text-zinc-400 hover:text-purple-400 transition-colors"
+                  children = {'Pricing'} 
+                />
               </li>
               <li>
-                <Button variant="link" size="lg" className="p-0 h-auto text-zinc-400 hover:text-purple-400 transition-colors">
-                  Integrations
-                </Button>
+                <Button 
+                  variant="link" 
+                  size="lg" 
+                  className="p-0 h-auto text-zinc-400 hover:text-purple-400 transition-colors"
+                  children = {'Integrations'} 
+                />
               </li>
               <li>
-                <Button variant="link" size="lg" className="p-0 h-auto text-zinc-400 hover:text-purple-400 transition-colors">
-                  Changelog
-                </Button>
+                <Button 
+                  variant="link" 
+                  size="lg" 
+                  className="p-0 h-auto text-zinc-400 hover:text-purple-400 transition-colors"
+                  children = {'Changelog'} 
+                />
               </li>
             </ul>
           </div>
@@ -402,24 +531,36 @@ export default function LandingPage() {
             <h3 className="text-lg font-heading font-medium mb-4">Resources</h3>
             <ul className="space-y-2 text-sm text-zinc-400">
               <li>
-                <Button variant="link" size="lg" className="p-0 h-auto text-zinc-400 hover:text-purple-400 transition-colors">
-                  Documentation
-                </Button>
+                <Button 
+                  variant="link" 
+                  size="lg" 
+                  className="p-0 h-auto text-zinc-400 hover:text-purple-400 transition-colors"
+                  children = {'Documentation'} 
+                />
               </li>
               <li>
-                <Button variant="link" size="lg" className="p-0 h-auto text-zinc-400 hover:text-purple-400 transition-colors">
-                  Tutorials
-                </Button>
+                <Button 
+                  variant="link" 
+                  size="lg" 
+                  className="p-0 h-auto text-zinc-400 hover:text-purple-400 transition-colors"
+                  children = {'Tutorials'} 
+                />
               </li>
               <li>
-                <Button variant="link" size="lg" className="p-0 h-auto text-zinc-400 hover:text-purple-400 transition-colors">
-                  Blog
-                </Button>
+                <Button 
+                  variant="link" 
+                  size="lg" 
+                  className="p-0 h-auto text-zinc-400 hover:text-purple-400 transition-colors"
+                  children = {'Blog'} 
+                />
               </li>
               <li>
-                <Button variant="link" size="lg" className="p-0 h-auto text-zinc-400 hover:text-purple-400 transition-colors">
-                  Community
-                </Button>
+                <Button 
+                  variant="link" 
+                  size="lg" 
+                  className="p-0 h-auto text-zinc-400 hover:text-purple-400 transition-colors"
+                  children = {'Community'} 
+                />
               </li>
             </ul>
           </div>
@@ -427,24 +568,36 @@ export default function LandingPage() {
             <h3 className="text-lg font-heading font-medium mb-4">Company</h3>
             <ul className="space-y-2 text-sm text-zinc-400">
               <li>
-                <Button variant="link" size="lg" className="p-0 h-auto text-zinc-400 hover:text-purple-400 transition-colors">
-                  About
-                </Button>
+                <Button 
+                  variant="link" 
+                  size="lg" 
+                  className="p-0 h-auto text-zinc-400 hover:text-purple-400 transition-colors"
+                  children = {'About'} 
+                />
               </li>
               <li>
-                <Button variant="link" size="lg" className="p-0 h-auto text-zinc-400 hover:text-purple-400 transition-colors">
-                  Careers
-                </Button>
+                <Button 
+                  variant="link" 
+                  size="lg" 
+                  className="p-0 h-auto text-zinc-400 hover:text-purple-400 transition-colors"
+                  children = {'Careers'} 
+                />
               </li>
               <li>
-                <Button variant="link" size="lg" className="p-0 h-auto text-zinc-400 hover:text-purple-400 transition-colors">
-                  Privacy Policy
-                </Button>
+                <Button 
+                  variant="link" 
+                  size="lg" 
+                  className="p-0 h-auto text-zinc-400 hover:text-purple-400 transition-colors"
+                  children = {'Privacy Policy'} 
+                />
               </li>
               <li>
-                <Button variant="link" size="lg" className="p-0 h-auto text-zinc-400 hover:text-purple-400 transition-colors">
-                  Terms of Service
-                </Button>
+                <Button 
+                  variant="link" 
+                  size="lg" 
+                  className="p-0 h-auto text-zinc-400 hover:text-purple-400 transition-colors"
+                  children = {'Terms of Service'} 
+                />
               </li>
             </ul>
           </div>

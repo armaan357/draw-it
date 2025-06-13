@@ -5,5 +5,7 @@
 //   })()
 
 import 'dotenv/config.js';
-export const JWT_SECRET = process.env.USER_SECRET || 'secretKeyNotFetched';
-console.log(JWT_SECRET);
+export const USER_SECRET = process.env.USER_SECRET || 'usersecretnotfetched23<';
+export const JWT_SECRET = process.env.JWT_SECRET || 'secretKeyNotFetched%^78';
+console.log("JWT_SECRET = ",JWT_SECRET);
+console.log('USER_SECRET = ', USER_SECRET);

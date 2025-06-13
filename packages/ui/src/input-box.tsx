@@ -25,6 +25,9 @@ export function InputBox({ type, placeholder, ref, purpose, label }: propType) {
                 style={{ padding: '12px 24px' }}
                 className={`${purposeInp[purpose]} bg-zinc-800 hover:bg-zinc-700 outline-0 border-0 text-base text-zinc-100 transition-all duration-300`}
             />
+            {/* <div className="absolute right-0.5">
+                <EyeIcon />
+            </div> */}
         </div>
         
     );

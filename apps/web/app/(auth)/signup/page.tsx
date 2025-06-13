@@ -60,7 +60,7 @@ export default function SignUp() {
                     <InputBox label='Last Name' ref={lastNameRef} type="text" placeholder="Last Name" purpose='primary' />
                 </div>
                 <div className="w-full flex flex-col justify-center items-center gap-2.5 max-w-sm">
-                    <Button variant='primary' className="bg-purple-600 hover:bg-purple-700 w-full" size='lg' children={'Send'} onClick={signup} />
+                    <Button variant='primary' className="bg-purple-600 hover:bg-purple-700 w-full" size='lg' children={'Sign Up'} onClick={signup} />
                     <p>Already have an account? <Link href='/signin' className="text-blue-600 hover:text-blue-500 hover:underline cursor-pointer">Login</Link></p>
                     {msg.length !== 0 && <p>{msg}</p>}
                 </div>

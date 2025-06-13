@@ -27,7 +27,7 @@ export default function SignIn() {
                 return;
             }
             
-            const resp = await axios.post('http://localhost:3001/signin', userInfo);
+            const resp = await axios.post('http://localhost:3001/signin', userInfo, { withCredentials: true });
             if(!resp) {
                 setMsg('Please try again');
                 return;
@@ -38,7 +38,7 @@ export default function SignIn() {
             }
             localStorage.setItem('token', resp.data.token);
             localStorage.setItem('userName', resp.data.userName);
-            navigate.push('/');
+            navigate.push('/canvas');
         }catch(e: any) {
             console.log("error: ", e);
         }
@@ -55,7 +55,7 @@ export default function SignIn() {
                     <InputBox label='Password' ref={pwdRef} type="password" placeholder="Enter your password" purpose='primary' />
                 </div>
                 <div className="w-full flex flex-col justify-center items-center gap-2.5 max-w-sm">
-                    <Button variant='primary' size='lg' className="bg-purple-600 hover:bg-purple-700 w-full" children={'Send'} onClick={signin} />
+                    <Button variant='primary' size='lg' className="bg-purple-600 hover:bg-purple-700 w-full" children={'Log In'} onClick={signin} />
                     <p>Don't have an account? <Link href='/signup' className="text-blue-600 hover:text-blue-500 hover:underline cursor-pointer">Sign Up</Link></p>
                     {msg.length !== 0 && <p>{msg}</p>}
                 </div>

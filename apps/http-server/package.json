@@ -25,12 +25,18 @@
   "dependencies": {
     "@repo/db": "workspace:*",
     "@types/cors": "^2.8.17",
+    "@types/express-session": "^1.18.1",
+    "@types/passport": "^1.0.17",
+    "@types/passport-local": "^1.0.38",
     "bcrypt": "^5.1.1",
     "cors": "^2.8.5",
     "dotenv-flow": "^4.1.0",
     "dotenv-flow-cli": "^1.1.1",
     "express": "^5.1.0",
+    "express-session": "^1.18.1",
     "jsonwebtoken": "^9.0.2",
+    "passport": "^0.7.0",
+    "passport-local": "^1.0.0",
     "zod": "^3.24.3"
   }
 }
