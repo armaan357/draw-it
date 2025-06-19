@@ -1,8 +1,7 @@
 "use client";
-import styles from '../../page.module.css';
 import { useRef, useState } from "react"
-import { InputBox } from "@repo/ui/input-box";
-import { Button } from "@repo/ui/button";
+import { InputBox } from "../../ui/input-box";
+import { Button } from "../../ui/button";
 import axios from "axios";
 import { useRouter } from 'next/navigation';
 import { SigninSchema } from '@repo/common/schema';

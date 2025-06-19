@@ -11,7 +11,7 @@ export function canvasContext(canvas: HTMLCanvasElement, startX: RefObject<numbe
         return;
     }
     
-    ctx.strokeStyle = 'rgba(255, 255, 255, 1)';
+    ctx.strokeStyle = 'white';
     ctx.lineWidth = 1.5;
     ctx.letterSpacing = '2px';
     ctx.fontKerning = 'normal';
@@ -124,11 +124,11 @@ export function canvasContext(canvas: HTMLCanvasElement, startX: RefObject<numbe
             }
             console.log(shape);
         }
-        else if(currShape == 'freeHand') {
+        else if(currShape == 'draw') {
             shape = {
-                type: 'freeHand',
-                startX: startX.current,
-                startY: startY.current,
+                type: 'draw',
+                x: startX.current,
+                y: startY.current,
                 allCoordinates: allCoordinates
             }
             allCoordinates = [];
@@ -190,8 +190,8 @@ export function canvasContext(canvas: HTMLCanvasElement, startX: RefObject<numbe
             ctx.lineCap = 'round';
             ctx.stroke();
         }
-        else if(currShape == 'freeHand') {
-            console.log('freehand');
+        else if(currShape == 'draw') {
+            console.log('draw');
             allCoordinates.push({ x:  e.clientX, y: e.clientY });
             clearCanvas(ctx, allShapes, canvas);
             
