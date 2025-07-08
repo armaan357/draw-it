@@ -6,6 +6,8 @@ export type coordinatesType = {
     y: number;
 }
 
+export type differentShapeNameType = 'rect' | 'circle' | 'line'| 'draw' | 'drag' | 'text' | 'eraser' | 'select' | null;
+
 export type shapesType = {
     type: 'rect';
     x: number;

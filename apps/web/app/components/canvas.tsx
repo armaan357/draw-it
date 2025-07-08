@@ -6,6 +6,7 @@ import { clearCanvas } from "./clearCanvas";
 import { ShapeToolbar } from "./shapeToolbar";
 import { CanvasMenu } from "./canvasMenu";
 import { CustomizationToolbar } from './customizationToolbar'
+import { differentShapeNameType } from "../utils";
 
 export function Canvas({ allShapes, slug, socket, setShapes }: {
     allShapes: shapesType[];
@@ -17,7 +18,7 @@ export function Canvas({ allShapes, slug, socket, setShapes }: {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const startX = useRef<number>(0);
     const startY = useRef<number>(0);
-    const [ currShape, setCurrShape ] = useState<'rect' | 'circle' | 'line'| 'draw' | 'drag' | 'text' | 'eraser' | 'select' | null>(null);
+    const [ currShape, setCurrShape ] = useState<differentShapeNameType>(null);
     let roomId: string | null = slug ? slug : null;
     
     useEffect(() => {
