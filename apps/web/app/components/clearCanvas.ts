@@ -16,7 +16,7 @@ export function clearCanvas(ctx: CanvasRenderingContext2D, allShapes: shapesType
     allShapes.map((s) => {
         if(s.type === 'rect') {
             ctx.beginPath();
-            ctx.roundRect(s.x, s.y, s.width, s.height, (s.width + s.height) / 50);
+            ctx.roundRect(s.x, s.y, s.width, s.height, Math.abs((s.width + s.height) / 50));
             ctx.stroke();
         }
         else if(s.type === 'circle') {

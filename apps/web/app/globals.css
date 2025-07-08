@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-@font-face {
+/* @font-face {
   font-family: 'Caveat-SemiBold';
   src: url('./fonts/Caveat-SemiBold.ttf') format('truetext'); 
 }
@@ -11,7 +11,10 @@
 :root {
  font-family: cursive;
  font-style: oblique;
-}
+} */
+
+
+
 /* :root {
   --background: #ffffff;
   --foreground: #171717;

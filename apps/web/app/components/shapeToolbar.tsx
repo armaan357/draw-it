@@ -1,10 +1,10 @@
 // "use client";
-import { ChevronUp, Circle, Eraser, HandIcon, MousePointer2, Pen, RectangleHorizontal, Slash, TextIcon } from "lucide-react";
+import { Circle, Eraser, HandIcon, MousePointer2, Pen, RectangleHorizontal, Slash, TextIcon } from "lucide-react";
 import { Dispatch, SetStateAction } from "react";
 
 export function ShapeToolbar({ currShape, setCurrShape }: {
-    currShape: 'select' | 'rect' | 'circle' | 'line' | 'draw' | 'drag' | 'text' | 'eraser' | null;
-    setCurrShape: Dispatch<SetStateAction<'rect' | 'circle' | 'line' | 'draw' | 'drag' | 'text' | 'eraser' | 'select' | null>>;
+    currShape: 'rect' | 'circle' | 'line'| 'draw' | 'drag' | 'text' | 'eraser' | 'select' | null;
+    setCurrShape: Dispatch<SetStateAction<'rect' | 'circle' | 'line'| 'draw' | 'drag' | 'text' | 'eraser' | 'select' | null>>;
 }) {
     return (
         <div className="absolute bottom-4 flex justify-center gap-1 items-center p-1 rounded-lg bg-zinc-800/90 z-50 ">

@@ -17,7 +17,7 @@ export function Canvas({ allShapes, slug, socket, setShapes }: {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const startX = useRef<number>(0);
     const startY = useRef<number>(0);
-    const [ currShape, setCurrShape ] = useState<'rect' | 'circle' | 'line' | 'drag' | 'text' | 'eraser' | 'select' | null>(null);
+    const [ currShape, setCurrShape ] = useState<'rect' | 'circle' | 'line'| 'draw' | 'drag' | 'text' | 'eraser' | 'select' | null>(null);
     let roomId: string | null = slug ? slug : null;
     
     useEffect(() => {

@@ -166,7 +166,7 @@ export function canvasContext(canvas: HTMLCanvasElement, startX: RefObject<numbe
             let height = e.clientY - startY.current;
             clearCanvas(ctx, allShapes, canvas);
             ctx.beginPath();
-            ctx.roundRect(startX.current, startY.current, width, height, (width + height) / 50);
+            ctx.roundRect(startX.current, startY.current, width, height, Math.abs((width + height) / 50));
             ctx.stroke();
         }
         else if(currShape === 'circle') {

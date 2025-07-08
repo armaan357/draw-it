@@ -1,6 +1,3 @@
-import { Menu, Minus } from "lucide-react";
-import { useState } from "react";
-
 type strokeWidthType = {
     title: string;
     weight: string;

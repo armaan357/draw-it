@@ -440,17 +440,19 @@ export default function LandingPage() {
               Try our platform today. No sign-up required. It's completely free for personal use.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 mt-4">
-              <Button 
-                variant="primary"
-                size="lg"
-                className="bg-purple-600 hover:bg-purple-700 transition-all group"
-                children = {
-                  <>
-                    Start Drawing Now
-                  <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-                  </>
-                }
-              />
+              <Link href={'/canvas'} >
+                <Button 
+                  variant="primary"
+                  size="lg"
+                  className="bg-purple-600 hover:bg-purple-700 transition-all group"
+                  children = {
+                    <>
+                      Start Drawing Now
+                    <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                    </>
+                  }
+                />
+              </Link>
               <Button 
                 size="lg"
                 variant="outline"
