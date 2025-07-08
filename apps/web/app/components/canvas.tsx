@@ -26,7 +26,7 @@ export function Canvas({ allShapes, slug, socket, setShapes }: {
             return;
         }
         const canvas = canvasRef.current;
-        console.log('allShapes in canas before context = ', allShapes);
+
         //@ts-ignore
         window.selectedShape = currShape;
         canvasContext(canvas, startX, startY, allShapes, roomId, socket, setShapes);

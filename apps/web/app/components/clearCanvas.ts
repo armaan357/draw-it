@@ -4,7 +4,7 @@ export function clearCanvas(ctx: CanvasRenderingContext2D, allShapes: shapesType
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     if(!allShapes) {
-        console.log('All shapes does not exist');
+        // console.log('All shapes does not exist');
         return;
     }
 
@@ -12,7 +12,7 @@ export function clearCanvas(ctx: CanvasRenderingContext2D, allShapes: shapesType
         return;
         
     }
-    console.log('allshapes now while rendering = ', allShapes);
+    // console.log('allshapes now while rendering = ', allShapes);
     allShapes.map((s) => {
         if(s.type === 'rect') {
             ctx.beginPath();

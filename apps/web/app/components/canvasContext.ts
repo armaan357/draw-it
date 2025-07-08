@@ -6,7 +6,6 @@ import { clearCanvas } from "./clearCanvas";
 export function canvasContext(canvas: HTMLCanvasElement, startX: RefObject<number>, startY: RefObject<number>, allShapes: shapesType[], roomId: string | null, socket: WebSocket | undefined, setShapes: Dispatch<SetStateAction<shapesType[]>>) {
     const ctx = canvas.getContext('2d');
     const userName: string | null = localStorage.getItem('userName') ? localStorage.getItem('token') : null;
-    console.log('context roomId = ', roomId);
     if(!ctx) {
         return;
     }
@@ -17,7 +16,6 @@ export function canvasContext(canvas: HTMLCanvasElement, startX: RefObject<numbe
     ctx.fontKerning = 'normal';
     ctx.font = '16px cursive';
     let clicked = false;
-    console.log('allshapes in canvas context = ', allShapes);
     clearCanvas(ctx, allShapes, canvas);
     
     let allCoordinates: coordinatesType[] = [];
@@ -33,9 +31,7 @@ export function canvasContext(canvas: HTMLCanvasElement, startX: RefObject<numbe
         clicked = true;
         startX.current = e.clientX;
         startY.current = e.clientY;
-        console.log('mouse down');
         if(currShape == 'select') {
-            console.log(`selecting at coordinates => x: ${e.clientX}, y: ${e.clientY}`);
             return;
         }
         if(currShape == 'text') {
@@ -44,7 +40,7 @@ export function canvasContext(canvas: HTMLCanvasElement, startX: RefObject<numbe
     });
 
     const writeText = (e: KeyboardEvent) => {
-        console.log('key pressed = ', e.key);
+        // console.log('key pressed = ', e.key);
         //@ts-ignore
         const currShape: string | null = window.selectedShape;
         if(e.key == 'Escape') {
@@ -84,8 +80,8 @@ export function canvasContext(canvas: HTMLCanvasElement, startX: RefObject<numbe
             return;
         }
         clicked = false;
-        console.log('mouseup');
-        console.log('currshape after mouse up = ', currShape );
+        // console.log('mouseup');
+        // console.log('currshape after mouse up = ', currShape );
         let shape: shapesType | null = null;
 
         if(currShape === 'rect') {
@@ -98,7 +94,7 @@ export function canvasContext(canvas: HTMLCanvasElement, startX: RefObject<numbe
                 width,
                 height
             }
-            console.log(shape);
+            // console.log(shape);
         }
         else if(currShape === 'circle') {
             let centerX = (startX.current + e.clientX) / 2;
@@ -112,7 +108,7 @@ export function canvasContext(canvas: HTMLCanvasElement, startX: RefObject<numbe
                 radX: radX,
                 radY: radY
             };
-            console.log(shape);
+            // console.log(shape);
         }
         else if(currShape == 'line') {
             shape = {
@@ -122,7 +118,7 @@ export function canvasContext(canvas: HTMLCanvasElement, startX: RefObject<numbe
                 toX: e.clientX,
                 toY: e.clientY
             }
-            console.log(shape);
+            // console.log(shape);
         }
         else if(currShape == 'draw') {
             shape = {
@@ -132,7 +128,7 @@ export function canvasContext(canvas: HTMLCanvasElement, startX: RefObject<numbe
                 allCoordinates: allCoordinates
             }
             allCoordinates = [];
-            console.log(shape);
+            // console.log(shape);
         }
         if(!shape) {
             return;
@@ -143,7 +139,7 @@ export function canvasContext(canvas: HTMLCanvasElement, startX: RefObject<numbe
         setShapes([...tempShapes]);
 
         if(roomId) {
-            console.log('sending');
+            // console.log('sending');
             sendShapes(socket!, shape, roomId, userName!);
         }
         clearCanvas(ctx, allShapes, canvas);
@@ -158,7 +154,7 @@ export function canvasContext(canvas: HTMLCanvasElement, startX: RefObject<numbe
         }
 
         canvas.addEventListener('keydown', (e) => {
-            console.log("key pressed = ", e.key);
+            // console.log("key pressed = ", e.key);
         })
 
         if(currShape === 'rect') {
@@ -170,7 +166,7 @@ export function canvasContext(canvas: HTMLCanvasElement, startX: RefObject<numbe
             ctx.stroke();
         }
         else if(currShape === 'circle') {
-            console.log('circle');
+            // console.log('circle');
             let centerX = (startX.current + e.clientX) / 2;
             let centerY = (startY.current + e.clientY) / 2;
             let radX = Math.abs(centerX - e.clientX);
@@ -181,7 +177,7 @@ export function canvasContext(canvas: HTMLCanvasElement, startX: RefObject<numbe
             ctx.stroke();
         }
         else if(currShape == 'line') {
-            console.log('line');
+            // console.log('line');
             clearCanvas(ctx, allShapes, canvas);
             ctx.beginPath();
             ctx.lineJoin = 'round';
@@ -191,7 +187,7 @@ export function canvasContext(canvas: HTMLCanvasElement, startX: RefObject<numbe
             ctx.stroke();
         }
         else if(currShape == 'draw') {
-            console.log('draw');
+            // console.log('draw');
             allCoordinates.push({ x:  e.clientX, y: e.clientY });
             clearCanvas(ctx, allShapes, canvas);
             

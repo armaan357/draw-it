@@ -23,10 +23,10 @@ export function CanvasSocket({ allShapes, slug, setShapes }: {
                 ws.onopen = () => {
                     setSocket(ws);
                 }
-                console.log('resp in canvasSock = ', resp.data.shapes);
+                // console.log('resp in canvasSock = ', resp.data.shapes);
                 
                 setShapes(s => s = [...resp.data.shapes]);
-                console.log('allshapes in canvasSock = ', allShapes);
+                // console.log('allshapes in canvasSock = ', allShapes);
                 // getShapes();
             })
             .catch((e) => {
@@ -49,14 +49,14 @@ export function CanvasSocket({ allShapes, slug, setShapes }: {
     async function getShapes() {
         const resp = await axios.get(`${HTTP_URL}/shape/${slug}`, { withCredentials: true });
         if(!resp || resp.data.error) {
-            console.log('Error', resp.data.error);
+            // console.log('Error', resp.data.error);
             return <div>
                 Error!
             </div>
         }
         allShapes = [...resp.data.shapes];
         // setAllShapes([...(resp.data.shapes)]);
-        console.log('allshapes in canvas socket = ', allShapes);
+        // console.log('allshapes in canvas socket = ', allShapes);
         setLoading(l => l = false);
     }
     
