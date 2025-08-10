@@ -8,7 +8,7 @@ import { useParams } from "next/navigation";
 export default function RoomCanvas() {
 
     const { roomId }  = useParams<{ roomId: string }>();
-    const allShapes: shapesType[] = [];
+    // const allShapes: shapesType[] = [];
     const [ shapes, setShapes ] = useState<shapesType[]>([]);
     return (
         <CanvasSocket allShapes={shapes} slug={roomId} setShapes={setShapes} />
