@@ -10,7 +10,6 @@ import session from 'express-session';
 import passport from './passportConfig';
 
 const app = express();
-const port = parseInt(process.env.PORT!) || 3001;
 
 interface Iusers {
     userName: string;
@@ -269,4 +268,4 @@ app.get('/connect-room/:slug', verifyUser, async (req: Request, res: Response) =
     
 });
  
-app.listen(port);
+app.listen(3001);

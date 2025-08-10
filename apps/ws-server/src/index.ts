@@ -4,7 +4,7 @@ import verify from "./middleware";
 import { prisma } from "@repo/db/client";
 import { Imsg, shapesType } from "@repo/common/types";
 
-const port: number = parseInt(process.env.PORT!) || 8080;
+const port: number = parseInt(process.env.PORT!) || 3000;
 const wss = new WebSocketServer({ port: port });
 
 interface Iusers {

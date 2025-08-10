@@ -25,8 +25,8 @@ export default function SignIn() {
             if(userInfo.userName.length === 0 || userInfo.password.length === 0){
                 return;
             }
-            
-            const resp = await axios.post('http://localhost:3001/signin', userInfo, { withCredentials: true });
+            // { withCredentials: true }
+            const resp = await axios.post('http://localhost:3001/signin', userInfo );
             if(!resp) {
                 setMsg('Please try again');
                 return;
