@@ -10,6 +10,7 @@ import session from 'express-session';
 import passport from './passportConfig';
 
 const app = express();
+const port = parseInt(process.env.PORT!) || 3001;
 
 interface Iusers {
     userName: string;
@@ -20,11 +21,7 @@ interface Iusers {
 
 export let users: Iusers[] = []
 
-app.use(cors({
-  origin: 'http://localhost:3000',
-  optionsSuccessStatus: 200,
-  credentials: true
-}));
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
@@ -272,4 +269,4 @@ app.get('/connect-room/:slug', verifyUser, async (req: Request, res: Response) =
     
 });
  
-app.listen(3001);
+app.listen(port);
