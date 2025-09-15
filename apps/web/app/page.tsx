@@ -28,11 +28,11 @@ export default function LandingPage() {
   useEffect(() => {
     axios.get(`${HTTP_URL}/auth-me`, { withCredentials: true })
       .then((resp) => {
-        console.log(resp);
+        // console.log(resp);
         setVerified(true);
       })
       .catch((e: any) => {
-        console.log("error = ", e);
+        // console.log("error = ", e);
       })
   }, []);
 
@@ -79,7 +79,7 @@ export default function LandingPage() {
               onClick = {
                 async () => { 
                   const resp = await axios.get(`${HTTP_URL}/logout`, { withCredentials: true });
-                  console.log("logout resp = ", resp.data);
+                  // console.log("logout resp = ", resp.data);
                 }
               }
             />
