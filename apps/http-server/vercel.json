@@ -1,14 +1,9 @@
 {
-  "builds": [
-    {
-      "src": "dist/index.js",
-      "use": "@vercel/node"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "dist/index.js"
-    }
-  ]
+	"version": 2,
+	"functions": {
+		"api/index.ts": {
+			"maxDuration": 60
+		}
+	},
+	"rewrites": [{ "source": "/(.*)", "destination": "/api/index" }]
 }
