@@ -1,13 +1,13 @@
 import express, { NextFunction, Request, Response, Express } from "express";
-import { prisma } from "@repo/db/client";
+import { prisma } from "@repo/db";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import verifyUser from "./middleware";
+import verifyUser from "./middleware/index.js";
 import { USER_SECRET, JWT_SECRET } from "@repo/backend-common/config";
 import { SignupSchema, CreateRoomSchema } from "@repo/common/schema";
 import cors from "cors";
 import session from "express-session";
-import passport from "./passportConfig";
+import passport from "./passportConfig.js";
 
 const app: Express = express();
 

@@ -6,7 +6,8 @@
 		"target": "ES2023",
 		// "rootDir": "./src",
 		"outDir": "./dist",
-		"typeRoots": ["./node_modules/@types", "./@types"]
+		"typeRoots": ["./node_modules/@types", "./@types"],
+		"esModuleInterop": true
 	}
 }
 
