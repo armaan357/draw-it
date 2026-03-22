@@ -20,20 +20,22 @@ import {
 } from "lucide-react"
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { HTTP_URL } from "./utils";
+
+const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 export default function LandingPage() {
 
   const [ verified, setVerified ] = useState<boolean>(false);
   useEffect(() => {
-    axios.get(`${HTTP_URL}/auth-me`, { withCredentials: true })
-      .then((resp) => {
-        // console.log(resp);
-        setVerified(true);
-      })
-      .catch((e: any) => {
-        // console.log("error = ", e);
-      })
+    axios
+		.get(`${backendUrl}/auth-me`, { withCredentials: true })
+		.then((resp) => {
+			// console.log(resp);
+			setVerified(true);
+		})
+		.catch((e: any) => {
+			// console.log("error = ", e);
+		});
   }, []);
 
   return (
@@ -78,7 +80,9 @@ export default function LandingPage() {
               children={'Log Out'} 
               onClick = {
                 async () => { 
-                  const resp = await axios.get(`${HTTP_URL}/logout`, { withCredentials: true });
+                  const resp = await axios.get(`${backendUrl}/logout`, {
+						withCredentials: true,
+					});
                   // console.log("logout resp = ", resp.data);
                 }
               }
