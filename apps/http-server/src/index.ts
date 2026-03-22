@@ -18,9 +18,32 @@ interface Iusers {
 	lastName: string;
 }
 
+const feURL = process.env.FE_URL;
+
+const allowedOrigins = [
+	"http://localhost:5173",
+	"http://localhost:3000",
+	"http://localhost:8000",
+	feURL,
+];
+
 export let users: Iusers[] = [];
 
-app.use(cors());
+app.use(
+	cors({
+		origin: (origin, callback) => {
+			if (!origin) return callback(null, true);
+			if (allowedOrigins.indexOf(origin) === -1) {
+				let message =
+					"The CORS policy for this application doesn't allow access from origin " +
+					origin;
+				return callback(new Error(message), false);
+			}
+			return callback(null, true);
+		},
+		credentials: true,
+	}),
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
@@ -29,7 +52,12 @@ app.use(
 		secret: USER_SECRET,
 		resave: false,
 		saveUninitialized: false,
-		cookie: { secure: false },
+		cookie: {
+			secure: process.env.NODE_ENV == "production",
+			sameSite: process.env.NODE_ENV == "production" ? "none" : "lax",
+			httpOnly: true,
+			maxAge: 1000 * 60 * 60 * 24 * 7,
+		},
 	}),
 );
 
@@ -38,7 +66,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.get("/", (req: Request, res: Response) => {
-	res.json({ message: "express in turbo repo" });
+	res.json({ message: "express app working fine!" });
 });
 
 app.post("/signup", async (req: Request, res: Response) => {
