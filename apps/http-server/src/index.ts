@@ -29,6 +29,8 @@ const allowedOrigins = [
 
 export let users: Iusers[] = [];
 
+app.set("trust proxy", 1);
+
 app.use(
 	cors({
 		origin: (origin, callback) => {
@@ -141,37 +143,6 @@ app.get(
 		res.json({ message: "Authorized User!" });
 	},
 );
-
-// app.post('/signin', async (req: Request, res: Response) => {
-//     const requiredBody = SigninSchema;
-
-//     const parsed = requiredBody.safeParse(req.body);
-//     if(!parsed.success) {
-//         res.json({ error: parsed.error });
-//         return;
-//     }
-//     const { userName, password } = parsed.data;
-
-//     try{
-
-//         const user = await prisma.users.findFirst({ where: { userName } });
-//         if(!user) {
-//             res.json({ error: 'User does not exist please sign up and try again' });
-//             return;
-//         }
-//         const hashed = await bcrypt.compare(password, user.password);
-//         if(!hashed) {
-//             res.json({ error: 'Incorrect Password' });
-//             return;
-//         }
-//         console.log("secret key = ", USER_SECRET);
-//         const token = jwt.sign({ id: user.id }, USER_SECRET!);
-//         res.status(201).json({ message: 'Signed In', token: `Bearer ${token}`, userName: user.userName });
-//     }
-//     catch(e :any) {
-//         res.json({ error: e.toString() });
-//     }
-// });
 
 app.post("/create-room", verifyUser, async (req: Request, res: Response) => {
 	const requiredBody = CreateRoomSchema;
@@ -330,6 +301,6 @@ app.get(
 	},
 );
 
-// app.listen(3001);
+app.listen(3001);
 
 export default app;
