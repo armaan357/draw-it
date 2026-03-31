@@ -48,8 +48,20 @@ export default function SignIn() {
 	}
 
 	return (
-		<div className="flex justify-center items-center min-h-screen bg-zinc-800 text-zinc-100 font-sans">
-			<div className="w-md flex flex-col justify-center items-center gap-6 border-2 border-zinc-700 rounded-lg py-7 px-3 bg-zinc-950/50">
+		<div className="h-full min-h-screen w-full bg-[#121212] text-zinc-100 font-sans">
+			<div className="py-2.5 h-15 w-full flex justify-between items-center px-3 sm:px-8 md:px-12">
+				<div></div>
+				<div>
+					<Link href={"signup"}>
+						<Button
+							variant="secondary"
+							size="md"
+							children={"Log In"}
+						/>
+					</Link>
+				</div>
+			</div>
+			<div className="w-full sm:w-md mx-auto flex flex-col justify-center items-center gap-6 border-none py-7 px-3">
 				<div>
 					<h1 className="text-2xl font-semibold">Sign In</h1>
 				</div>
@@ -72,12 +84,12 @@ export default function SignIn() {
 				<div className="w-full flex flex-col justify-center items-center gap-2.5 max-w-sm">
 					<Button
 						variant="primary"
-						size="lg"
+						size="full"
 						className="bg-purple-600 hover:bg-purple-700 w-full"
 						children={"Log In"}
 						onClick={signin}
 					/>
-					<p>
+					{/* <p>
 						Don't have an account?{" "}
 						<Link
 							href="/signup"
@@ -85,7 +97,7 @@ export default function SignIn() {
 						>
 							Sign Up
 						</Link>
-					</p>
+					</p> */}
 					{msg.length !== 0 && <p>{msg}</p>}
 				</div>
 			</div>

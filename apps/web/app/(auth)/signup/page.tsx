@@ -52,10 +52,24 @@ export default function SignUp() {
 	}
 
 	return (
-		<div className="flex justify-center items-center h-screen bg-zinc-800 text-zinc-100 font-sans">
-			<div className="w-md flex flex-col justify-center items-center gap-6 border-2 border-zinc-700 rounded-lg py-5 px-3 bg-zinc-950/50">
+		<div className="h-full min-h-screen w-full bg-[#121212] text-zinc-100 font-sans">
+			<div className="py-2.5 h-15 w-full flex justify-between items-center px-3 sm:px-8 md:px-12">
+				<div></div>
 				<div>
-					<h1 className="text-2xl font-semibold">Sign Up</h1>
+					<Link href={"signin"}>
+						<Button
+							variant="secondary"
+							size="md"
+							children={"Log In"}
+						/>
+					</Link>
+				</div>
+			</div>
+			<div className="w-full sm:w-md flex flex-col mx-auto justify-center items-center gap-6 border-none py-7 px-3">
+				<div>
+					<h1 className="text-2xl font-semibold select-none">
+						Sign Up
+					</h1>
 				</div>
 				<div className="flex flex-col w-full gap-5 justify-center items-center max-w-sm">
 					<InputBox
@@ -91,11 +105,11 @@ export default function SignUp() {
 					<Button
 						variant="primary"
 						className="bg-purple-600 hover:bg-purple-700 w-full"
-						size="lg"
+						size="full"
 						children={"Sign Up"}
 						onClick={signup}
 					/>
-					<p>
+					{/* <p>
 						Already have an account?{" "}
 						<Link
 							href="/signin"
@@ -103,7 +117,7 @@ export default function SignUp() {
 						>
 							Login
 						</Link>
-					</p>
+					</p> */}
 					{msg.length !== 0 && <p>{msg}</p>}
 				</div>
 			</div>
