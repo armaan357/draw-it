@@ -1,7 +1,34 @@
+export type shapeGeometryType =
+	| {
+			type: "rect";
+			width: number;
+			height: number;
+	  }
+	| {
+			type: "circle";
+			radX: number;
+			radY: number;
+	  }
+	| {
+			type: "line";
+			dX: number;
+			dY: number;
+	  }
+	| {
+			type: "draw";
+			allCoordinates: { x: number; y: number }[];
+	  }
+	| {
+			type: "text";
+			text: string;
+			width: number;
+			height: number;
+			fontSize: number;
+	  };
+
 export type shapesType = {
 	id: string;
-	type: "rect" | "circle" | "line" | "draw" | "text";
-	zIndex: number;
+	zIndex?: number;
 	position: {
 		x: number;
 		y: number;
@@ -25,43 +52,35 @@ export type shapesType = {
 	};
 };
 
-type shapeGeometryType =
-	| {
-			width: number;
-			height: number;
-	  }
-	| {
-			radX: number;
-			radY: number;
-	  }
-	| {
-			dX: number;
-			dY: number;
-	  }
-	| {
-			allCoordinates: { x: number; y: number }[];
-	  }
-	| {
-			text: string;
-			width: number;
-			height: number;
-			fontSize: number;
-	  };
+export interface currentShapesStateType {
+	allShapes: shapesType[];
+	past: shapesType[][];
+	future: shapesType[][];
+	addShapes: (newShape: shapesType) => void;
+	removeShape: (id: string) => void;
+	resizeShape: (id: string, geometry: shapeGeometryType) => void;
+	repositionShape: (id: string, position: { x: number; y: number }) => void;
+	undo: () => void;
+	redo: () => void;
+	commitHistory: (snapShot: shapesType[]) => void;
+}
 
-type allToolsType =
+export type allToolsType =
 	| "cursor"
 	| "rect"
 	| "circle"
 	| "line"
+	| "arrow"
 	| "draw"
 	| "drag"
 	| "text"
 	| "eraser"
-	| "select";
+	| "select"
+	| "drag";
 
 export interface currentToolState {
 	currentTool: allToolsType;
 	changeTool: (tool: allToolsType) => void;
 }
 
-export type appStoreType = currentToolState;
+export type appStoreType = currentToolState & currentShapesStateType;

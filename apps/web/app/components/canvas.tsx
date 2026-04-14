@@ -1,71 +1,76 @@
 "use client"
-import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react"
+import { useEffect, useRef } from "react";
 import { canvasContext } from "./canvasContext";
-import { shapesType } from "../utils";
-import { clearCanvas } from "./clearCanvas";
+import { drawCanvas } from "./drawCanvas";
 import { ShapeToolbar } from "./shapeToolbar";
 import { CanvasMenu } from "./canvasMenu";
-import { CustomizationToolbar } from './customizationToolbar'
-import { differentShapeNameType } from "../utils";
+import { CustomizationToolbar } from "./customizationToolbar";
+import { useAppStore } from "../../zustandState/store";
+import { useShallow } from "zustand/shallow";
 
-export function Canvas({ allShapes, slug, socket, setShapes }: {
-    allShapes: shapesType[];
-    slug?: string;
-    socket?: WebSocket;
-    setShapes: Dispatch<SetStateAction<shapesType[]>>;
+export function Canvas({
+	slug,
+	socket,
+}: {
+	slug?: string;
+	socket?: WebSocket;
 }) {
+	const canvasRef = useRef<HTMLCanvasElement>(null);
+	const startX = useRef<number>(0);
+	const startY = useRef<number>(0);
+	const { currentTool, changeTool, allShapes, addShapes } = useAppStore(
+		useShallow((state) => ({
+			currentTool: state.currentTool,
+			changeTool: state.changeTool,
+			allShapes: state.allShapes,
+			addShapes: state.addShapes,
+		})),
+	);
+	let roomId: string | null = slug ? slug : null;
 
-    const canvasRef = useRef<HTMLCanvasElement>(null);
-    const startX = useRef<number>(0);
-    const startY = useRef<number>(0);
-    const [ currShape, setCurrShape ] = useState<differentShapeNameType>(null);
-    let roomId: string | null = slug ? slug : null;
-    
-    useEffect(() => {
-        if(!canvasRef.current) {
-            return;
-        }
-        const canvas = canvasRef.current;
+	useEffect(() => {
+		if (!canvasRef.current) {
+			return;
+		}
+		const canvas = canvasRef.current;
+		const cleanUp = canvasContext(
+			canvas,
+			startX,
+			startY,
+			roomId,
+			socket,
+			currentTool,
+			changeTool,
+			allShapes,
+			addShapes,
+		);
+		return cleanUp;
+	}, [currentTool]);
 
-        //@ts-ignore
-        window.selectedShape = currShape;
-        canvasContext(canvas, startX, startY, allShapes, roomId, socket, setShapes);
-        // return () => {
-        //     // Example cleanup: remove all event listeners from the canvas
-        //     // (Assuming you add event listeners in canvasContext, you should remove them here)
-        //     // You can also clear the canvas if needed
-        //     if (canvas) {
-        //         const clone = canvas.cloneNode(true) as HTMLCanvasElement;
-        //         canvas.parentNode?.replaceChild(clone, canvas);
-        //     }
-        // };
-    }, [canvasRef, currShape]);
+	useEffect(() => {
+		const canvas = canvasRef.current;
+		if (!canvas) {
+			return;
+		}
+		const ctx = canvas.getContext("2d");
+		if (!ctx) {
+			return;
+		}
+		drawCanvas(ctx, allShapes, canvas);
+	}, [allShapes]);
 
-    // useEffect(() => {
-    //     //@ts-ignore
-    //     window.selectedShape = currShape;
-    // }, [currShape]);
-
-
-    useEffect(() => {
-        const canvas = canvasRef.current;
-        if(!canvas) {
-            return;
-        }
-        const ctx = canvas.getContext('2d');
-        if(!ctx) {
-            return;
-        }
-        clearCanvas(ctx, allShapes, canvas);
-    }, [allShapes]);
-
-    return (
-        <div className="w-dvw h-dvh stroke-1 stroke-emerald-950 text-white flex justify-center">
-            
-            <canvas ref={canvasRef} width={1536} height={695} className="bg-[#101011] overflow-hidden"></canvas>
-            <ShapeToolbar currShape={currShape} setCurrShape={setCurrShape} />
-            <CustomizationToolbar />
-            <CanvasMenu />
-        </div>
-    )
+	return (
+		<div className="min-w-dvw h-dvh stroke-1 stroke-emerald-950 text-white flex justify-center">
+			<canvas
+				ref={canvasRef}
+				width={1536}
+				height={695}
+				className="bg-[#101011] overflow-hidden"
+			></canvas>
+			<ShapeToolbar />
+			<CustomizationToolbar />
+			<CanvasMenu />
+		</div>
+	);
 }
+

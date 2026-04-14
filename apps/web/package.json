@@ -18,6 +18,7 @@
 		"dotenv-flow": "^4.1.0",
 		"dotenv-flow-cli": "^1.1.1",
 		"lucide-react": "^0.510.0",
+		"nanoid": "^5.1.7",
 		"next": "^15.5.7",
 		"postcss": "^8.5.3",
 		"react": "^19.1.0",
