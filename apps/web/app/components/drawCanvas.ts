@@ -1,11 +1,44 @@
-import { shapesType } from "../../zustandState/storeTypes";
+import { shapeGeometryType, shapesType } from "../../zustandState/storeTypes";
+import { drawPreview } from "./drawPreview";
+
+export const render = (
+	ctx: CanvasRenderingContext2D,
+	canvas: HTMLCanvasElement,
+	allShapes: shapesType[],
+	currentShape: {
+		position: { x: number; y: number };
+		geometry: shapeGeometryType;
+	} | null,
+) => {
+	const dpr = window.devicePixelRatio || 1;
+
+	ctx.strokeStyle = "white";
+	ctx.setTransform(1, 0, 0, 1, 0, 0);
+	ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+	// ctx.setTransform(
+	// 	zoom * dpr,
+	// 	0,
+	// 	0,
+	// 	zoom * dpr,
+	// 	offsetX * dpr,
+	// 	offsetY * dpr,
+	// );
+	ctx.setTransform(1, 0, 0, 1, 0, 0);
+
+	drawCanvas(ctx, allShapes, currentShape);
+};
 
 export function drawCanvas(
 	ctx: CanvasRenderingContext2D,
 	allShapes: shapesType[],
-	canvas: HTMLCanvasElement,
+	currentShape: {
+		position: { x: number; y: number };
+		geometry: shapeGeometryType;
+	} | null,
 ) {
-	ctx.clearRect(0, 0, canvas.width, canvas.height);
+	ctx.strokeStyle = "white";
+	// ctx.clearRect(0, 0, canvas.width, canvas.height);
 
 	if (!allShapes) {
 		// console.log('All shapes does not exist');
@@ -15,8 +48,7 @@ export function drawCanvas(
 	if (allShapes.length === 0) {
 		return;
 	}
-	// console.log('allshapes now while rendering = ', allShapes);
-	allShapes.map((s) => {
+	allShapes.forEach((s) => {
 		switch (s.geometry.type) {
 			case "rect":
 				ctx.beginPath();
@@ -46,14 +78,17 @@ export function drawCanvas(
 			case "line":
 				ctx.beginPath();
 				ctx.moveTo(s.position.x, s.position.y);
-				ctx.lineTo(s.geometry.dX, s.geometry.dY);
+				ctx.lineTo(
+					s.geometry.dX + s.position.x,
+					s.geometry.dY + s.position.y,
+				);
 				ctx.stroke();
 				break;
 			case "draw":
 				ctx.lineJoin = "round";
 				ctx.beginPath();
 				ctx.moveTo(s.position.x, s.position.y);
-				s.geometry.allCoordinates.map((a) => ctx.lineTo(a.x, a.y));
+				s.geometry.allCoordinates.forEach((a) => ctx.lineTo(a.x, a.y));
 				ctx.stroke();
 				break;
 			case "text":
@@ -61,47 +96,5 @@ export function drawCanvas(
 				ctx.fillText(s.geometry.text, s.position.x, s.position.y);
 				break;
 		}
-		// if (s.type === "rect") {
-		// 	ctx.beginPath();
-		// 	ctx.roundRect(
-		// 		s.position.x,
-		// 		s.position.y,
-		// 		s.geometry.width,
-		// 		s.geometry.height,
-		// 		Math.abs((s.geometry.width + s.geometry.height) / 50),
-		// 	);
-		// 	ctx.stroke();
-		// } else if (s.type === "circle") {
-		// 	ctx.beginPath();
-		// 	ctx.ellipse(
-		// 		s.position.x,
-		// 		s.position.y,
-		// 		s.geometry.radX,
-		// 		s.geometry.radY,
-		// 		0,
-		// 		0,
-		// 		2 * Math.PI,
-		// 		false,
-		// 	);
-		// 	ctx.stroke();
-		// } else if (s.type == "line") {
-		// 	ctx.beginPath();
-		// 	ctx.moveTo(s.position.x, s.position.y);
-		// 	ctx.lineTo(s.geometry.dX, s.geometry.dY);
-		// 	ctx.stroke();
-		// } else if (s.type == "draw") {
-		// 	ctx.lineJoin = "round";
-		// 	ctx.beginPath();
-		// 	ctx.moveTo(s.position.x, s.position.y);
-		// 	s.geometry.allCoordinates.map((a) => ctx.lineTo(a.x, a.y));
-		// 	ctx.stroke();
-		// 	// ctx.beginPath();
-		// 	// ctx.moveTo(s.x, s.y);
-		// 	// ctx.lineTo(s.toX, s.toY);
-		// 	// ctx.stroke();
-		// } else if (s.type == "text") {
-		// 	ctx.fillStyle = "white";
-		// 	ctx.fillText(s.geometry.text, s.position.x, s.position.y);
-		// }
 	});
 }

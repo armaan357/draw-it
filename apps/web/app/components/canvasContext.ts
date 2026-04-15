@@ -1,13 +1,14 @@
 import { RefObject } from "react";
 import { coordinatesType } from "../utils";
 import sendShapes from "./sendShapes";
-import { drawCanvas } from "./drawCanvas";
+import { drawCanvas, render } from "./drawCanvas";
 import {
 	allToolsType,
 	shapeGeometryType,
 	shapesType,
 } from "../../zustandState/storeTypes";
 import { nanoid } from "nanoid";
+import { drawPreview } from "./drawPreview";
 
 export function canvasContext(
 	canvas: HTMLCanvasElement,
@@ -19,6 +20,15 @@ export function canvasContext(
 	changeTool: (tool: allToolsType) => void,
 	allShapes: shapesType[],
 	addShapes: (newShape: shapesType) => void,
+	zoom: number,
+	offsetX: number,
+	offsetY: number,
+	changeZoom: (newZoom: number) => void,
+	changeOffset: (newOffsetX: number, newOffsetY: number) => void,
+	currentShape: {
+		position: { x: number; y: number };
+		geometry: shapeGeometryType;
+	} | null,
 ) {
 	const ctx = canvas.getContext("2d");
 	const userName: string | null = localStorage.getItem("userName")
@@ -35,7 +45,8 @@ export function canvasContext(
 	ctx.fontKerning = "normal";
 	ctx.font = "16px cursive";
 	let clicked = false;
-	drawCanvas(ctx, allShapes, canvas);
+	// drawCanvas(ctx, allShapes);
+	render(ctx, canvas, allShapes, null);
 	console.log(
 		`In canvas context => clicked = ${clicked} & currentTool = ${currentTool}`,
 	);
@@ -92,25 +103,95 @@ export function canvasContext(
 		if (currentTool === "cursor") {
 			return;
 		} else if (currentTool == "text") {
-			drawCanvas(ctx, allShapes, canvas);
+			drawCanvas(ctx, allShapes, null);
 			ctx.fillStyle = "white";
 			text += e.key;
 			ctx.fillText(`${text}`, startX.current, startY.current);
 		}
 	};
 
+	const findShapes = (e: MouseEvent) => {
+		console.log(`x coordinate = ${e.clientX}, y coordinate = ${e.clientY}`);
+		console.log("total shapes = ", allShapes.length);
+
+		for (let i = allShapes.length - 1; i >= 0; i--) {
+			const tempShape = allShapes[i];
+			const worldX = (e.clientX - offsetX) / zoom;
+			const worldY = (e.clientY - offsetY) / zoom;
+			if (!tempShape) {
+				continue;
+			}
+			if (tempShape.geometry.type === "rect") {
+				const isInXAxis =
+					worldX >= tempShape.position.x! &&
+					worldX <= tempShape.geometry.width! + tempShape.position.x;
+				const isInYAxis =
+					worldY >= tempShape.position.y! &&
+					worldY <= tempShape.geometry.height! + tempShape.position.y;
+				console.log(
+					`isInXAxis = ${isInXAxis}, isInYAxis = ${isInYAxis}\nx = ${tempShape.position.x}, y = ${tempShape.position.y} and  endX = ${tempShape.geometry.width! + tempShape.position.x}, endY = ${tempShape.geometry.height! + tempShape.position.y}`,
+				);
+				if (isInXAxis && isInYAxis) {
+					console.log(tempShape.id);
+					console.log(tempShape);
+					return;
+				}
+			} else if (tempShape.geometry.type === "circle") {
+				//after implementing the rotation feature, the points x and y will need to be rotated by the angle of rotation in the opposite direction and then use them for calulation
+				const semiMajorAxis =
+					tempShape.geometry.radX >= tempShape.geometry.radY
+						? tempShape.geometry.radX
+						: tempShape.geometry.radY;
+				const semiMinorAxis =
+					tempShape.geometry.radX <= tempShape.geometry.radY
+						? tempShape.geometry.radX
+						: tempShape.geometry.radY;
+
+				const isInXAxis =
+					((worldX - tempShape.position.x) *
+						(worldX - tempShape.position.x)) /
+					(semiMajorAxis * semiMajorAxis);
+				const isInYAxis =
+					((worldY - tempShape.position.y) *
+						(worldY - tempShape.position.y)) /
+					(semiMinorAxis * semiMinorAxis);
+				if (isInXAxis + isInYAxis < 1) {
+					console.log(tempShape.id);
+					console.log(tempShape);
+					return;
+				}
+			} else if (tempShape.geometry.type === "line") {
+				const startX = tempShape.position.x - 6;
+				const startY = tempShape.position.y - 6;
+				const endX = tempShape.geometry.dX + tempShape.position.x + 6;
+				const endY = tempShape.geometry.dY + tempShape.position.y + 6;
+
+				const isInXAxis = worldX >= startX && worldX <= endX;
+				const isInYAxis = worldY >= startY && worldY <= endY;
+
+				if (isInXAxis && isInYAxis) {
+					console.log(tempShape.id);
+					console.log(tempShape);
+					return;
+				}
+			}
+		}
+	};
+
 	const handleMouseDown = (e: MouseEvent) => {
 		if (currentTool == "cursor") {
-			return;
-		}
-		clicked = true;
-		startX.current = e.clientX;
-		startY.current = e.clientY;
-		if (currentTool == "select") {
-			return;
-		}
-		if (currentTool == "text") {
-			document.addEventListener("keydown", writeText);
+			findShapes(e);
+			// return;
+		} else {
+			clicked = true;
+			startX.current = (e.clientX - offsetX) / zoom;
+			startY.current = (e.clientY - offsetY) / zoom;
+			if (currentTool == "select") {
+				return;
+			}
+			if (currentTool == "text") {
+				document.addEventListener("keydown", writeText);
+			}
 		}
 	};
 
@@ -162,10 +243,12 @@ export function canvasContext(
 			geometry: shapeGeometryType;
 		}
 		let shapeSpecificProps: shapeSpecificType | null = null;
+		const worldX = (e.clientX - offsetX) / zoom;
+		const worldY = (e.clientY - offsetY) / zoom;
 
 		if (currentTool === "rect") {
-			let width = e.clientX - startX.current;
-			let height = e.clientY - startY.current;
+			let width = worldX - startX.current;
+			let height = worldY - startY.current;
 
 			shapeSpecificProps = {
 				position: {
@@ -179,15 +262,15 @@ export function canvasContext(
 				},
 			};
 		} else if (currentTool === "circle") {
-			let centerX = (startX.current + e.clientX) / 2;
-			let centerY = (startY.current + e.clientY) / 2;
-			let radX = Math.abs(centerX - e.clientX);
-			let radY = Math.abs(centerY - e.clientY);
+			let centerX = (startX.current + worldX) / 2;
+			let centerY = (startY.current + worldY) / 2;
+			let radX = Math.abs(centerX - worldX);
+			let radY = Math.abs(centerY - worldY);
 
 			shapeSpecificProps = {
 				position: {
-					x: startX.current,
-					y: startY.current,
+					x: centerX,
+					y: centerY,
 				},
 				geometry: {
 					type: "circle",
@@ -203,8 +286,8 @@ export function canvasContext(
 				},
 				geometry: {
 					type: "line",
-					dX: e.clientX,
-					dY: e.clientY,
+					dX: worldX - startX.current,
+					dY: worldY - startY.current,
 				},
 			};
 		} else if (currentTool == "draw") {
@@ -251,7 +334,8 @@ export function canvasContext(
 			// console.log('sending');
 			sendShapes(socket!, shape!, roomId, userName!);
 		}
-		drawCanvas(ctx, allShapes, canvas);
+		// drawCanvas(ctx, allShapes);
+		render(ctx, canvas, allShapes, null);
 	};
 
 	const handleMouseMove = (e: MouseEvent) => {
@@ -263,43 +347,45 @@ export function canvasContext(
 			// console.log("key pressed = ", e.key);
 		});
 		console.log("current tool in canvasContext  = ", currentTool);
+		const worldX = (e.clientX - offsetX) / zoom;
+		const worldY = (e.clientY - offsetY) / zoom;
 
 		if (currentTool === "rect") {
-			let width = e.clientX - startX.current;
-			let height = e.clientY - startY.current;
-			drawCanvas(ctx, allShapes, canvas);
-			ctx.beginPath();
-			ctx.roundRect(
-				startX.current,
-				startY.current,
-				width,
-				height,
-				Math.abs((width + height) / 50),
-			);
-			ctx.stroke();
+			let width = worldX - startX.current;
+			let height = worldY - startY.current;
+			// drawCanvas(ctx, allShapes);
+			currentShape = {
+				position: {
+					x: worldX,
+					y: worldY,
+				},
+				geometry: {
+					type: "rect",
+					width: width,
+					height: height,
+				},
+			};
+			render(ctx, canvas, allShapes, currentShape);
 		} else if (currentTool === "circle") {
-			// console.log('circle');
-			let centerX = (startX.current + e.clientX) / 2;
-			let centerY = (startY.current + e.clientY) / 2;
-			let radX = Math.abs(centerX - e.clientX);
-			let radY = Math.abs(centerY - e.clientY);
-			drawCanvas(ctx, allShapes, canvas);
+			let centerX = (startX.current + worldX) / 2;
+			let centerY = (startY.current + worldY) / 2;
+			let radX = Math.abs(centerX - worldX);
+			let radY = Math.abs(centerY - worldY);
+			drawCanvas(ctx, allShapes, null);
 			ctx.beginPath();
 			ctx.ellipse(centerX, centerY, radX, radY, 0, 0, 2 * Math.PI, false);
 			ctx.stroke();
 		} else if (currentTool == "line") {
-			// console.log('line');
-			drawCanvas(ctx, allShapes, canvas);
+			drawCanvas(ctx, allShapes, null);
 			ctx.beginPath();
 			ctx.lineJoin = "round";
 			ctx.moveTo(startX.current, startY.current);
-			ctx.lineTo(e.clientX, e.clientY);
+			ctx.lineTo(worldX, worldY);
 			ctx.lineCap = "round";
 			ctx.stroke();
 		} else if (currentTool == "draw") {
-			// console.log('draw');
-			allCoordinates.push({ x: e.clientX, y: e.clientY });
-			drawCanvas(ctx, allShapes, canvas);
+			allCoordinates.push({ x: worldX, y: worldY });
+			drawCanvas(ctx, allShapes, null);
 
 			ctx.lineJoin = "round";
 			ctx.beginPath();
@@ -309,15 +395,33 @@ export function canvasContext(
 		}
 	};
 
+	const handleWheel = (e: MouseEvent) => {
+		console.log(e);
+		const zoomFactor = 1.1 | 0.9;
+
+		const newZoom = zoom * zoomFactor;
+		const mouseX = (e.clientX - offsetX) / newZoom;
+		const mouseY = (e.clientY - offsetY) / newZoom;
+		const newOffsetX = mouseX - (mouseX - offsetX) * (newZoom / zoom);
+		const newOffsetY = mouseY - (mouseY - offsetY) * (newZoom / zoom);
+		changeZoom(newZoom);
+		changeOffset(newOffsetX, newOffsetY);
+		// drawCanvas(ctx, allShapes, null);
+		render(ctx, canvas, allShapes, null);
+	};
+
 	canvas.addEventListener("mousedown", handleMouseDown);
 
 	canvas.addEventListener("mouseup", handleMouseUp);
 
 	canvas.addEventListener("mousemove", handleMouseMove);
 
+	// canvas.addEventListener("wheel", handleWheel);
+
 	return () => {
 		canvas.removeEventListener("mousedown", handleMouseDown);
 		canvas.removeEventListener("mousemove", handleMouseMove);
 		canvas.removeEventListener("mouseup", handleMouseUp);
+		// canvas.removeEventListener("wheel", handleWheel);
 	};
 }

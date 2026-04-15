@@ -497,23 +497,29 @@ export default function LandingPage() {
 									}
 								/>
 							</Link>
-							<Button
-								size="lg"
-								variant="outline"
-								className="border-zinc-700 hover:bg-zinc-800"
-								children="View Documentation"
-							/>
+							<Link
+								href={"https://github.com/armaan357/draw-it"}
+								target="_blank"
+								rel="noopener noreferrer"
+							>
+								<Button
+									size="lg"
+									variant="outline"
+									className="border-zinc-700 hover:bg-zinc-800"
+									children="View Documentation"
+								/>
+							</Link>
 						</div>
-						<div className="mt-6 text-zinc-400 text-sm flex items-center gap-2">
+						{/* <div className="mt-6 text-zinc-400 text-sm flex items-center gap-2">
 							<Lock className="h-4 w-4" />
 							No credit card required. No strings attached.
-						</div>
+						</div> */}
 					</div>
 				</div>
 			</section>
 
 			{/* Footer */}
-			<footer className="border-t border-zinc-800 bg-zinc-950 py-12 sm:px-10 md:px-15 lg-px-20">
+			{/* <footer className="border-t border-zinc-800 bg-zinc-950 py-12 sm:px-10 md:px-15 lg-px-20">
 				<div className="container grid gap-8 md:grid-cols-2 lg:grid-cols-4">
 					<div className="flex flex-col gap-2">
 						<Link href="/" className="flex items-center gap-2">
@@ -665,7 +671,7 @@ export default function LandingPage() {
 						rights reserved.
 					</p>
 				</div>
-			</footer>
+			</footer> */}
 		</div>
   );
 }

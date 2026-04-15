@@ -78,9 +78,19 @@ export type allToolsType =
 	| "select"
 	| "drag";
 
-export interface currentToolState {
+export interface currentToolStateType {
 	currentTool: allToolsType;
 	changeTool: (tool: allToolsType) => void;
 }
 
-export type appStoreType = currentToolState & currentShapesStateType;
+export interface currentUIStateType {
+	currentTool: allToolsType;
+	zoom: number;
+	offsetX: number;
+	offSetY: number;
+	changeTool: (tool: allToolsType) => void;
+	changeZoom: (newZoom: number) => void;
+	changeOffset: (newOffsetX: number, newOffsetY: number) => void;
+}
+
+export type appStoreType = currentUIStateType & currentShapesStateType;

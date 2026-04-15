@@ -1,4 +1,8 @@
 @import "tailwindcss";
+:root {
+    --foreground: #ffffff;
+    --background: #171717;
+}
 
 /* @font-face {
   font-family: 'Caveat-SemiBold';
