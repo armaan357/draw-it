@@ -1,14 +1,13 @@
 "use client"
 import { useEffect, useRef } from "react";
 import { canvasContext } from "./canvasContext";
-import { drawCanvas, render } from "./drawCanvas";
+import { render } from "./drawCanvas";
 import { ShapeToolbar } from "./shapeToolbar";
 import { CanvasMenu } from "./canvasMenu";
 import { CustomizationToolbar } from "./customizationToolbar";
 import { useAppStore } from "../../zustandState/store";
 import { useShallow } from "zustand/shallow";
 import { shapeGeometryType, shapesType } from "../../zustandState/storeTypes";
-import { drawPreview } from "./drawPreview";
 
 export function Canvas({
 	slug,
@@ -68,34 +67,17 @@ export function Canvas({
 			socket,
 			currentTool,
 			changeTool,
-			shapesRef.current,
+			shapesRef,
 			addShapes,
-			zoomRef.current,
-			offsetXRef.current,
-			offsetYRef.current,
+			zoomRef,
+			offsetXRef,
+			offsetYRef,
 			changeZoom,
 			changeOffset,
-			currentShapeRef.current,
+			currentShapeRef,
 		);
 		return cleanUp;
 	}, [currentTool]);
-
-	// useEffect(() => {
-	// 	const canvas = canvasRef.current;
-	// 	if (!canvas) return;
-
-	// 	const resizeCanvas = () => {
-	// 		const dpr = window.devicePixelRatio || 1;
-
-	// 		canvas.width = canvas.clientWidth * dpr;
-	// 		canvas.height = canvas.clientHeight * dpr;
-	// 	};
-
-	// 	resizeCanvas();
-	// 	window.addEventListener("resize", resizeCanvas);
-
-	// 	return () => window.removeEventListener("resize", resizeCanvas);
-	// }, []);
 
 	useEffect(() => {
 		const canvas = canvasRef.current;
@@ -103,18 +85,54 @@ export function Canvas({
 
 		const ctx = canvas.getContext("2d");
 		if (!ctx) return;
-		// ctx.setTransform(1, 0, 0, 1, 0, 0);
 		const dpr = window.devicePixelRatio || 1;
 
 		canvas.width = canvas.clientWidth * dpr;
 		canvas.height = canvas.clientHeight * dpr;
 
-		render(ctx, canvas, allShapes, currentShapeRef.current);
+		render(ctx, canvas, allShapes, currentShapeRef, zoom, offsetX, offsetY);
 	}, [allShapes, zoom, offsetX, offsetY]);
+
+	useEffect(() => {
+		zoomRef.current = zoom;
+	}, [zoom]);
+
+	useEffect(() => {
+		offsetXRef.current = offsetX;
+		offsetYRef.current = offsetY;
+	}, [offsetX, offsetY]);
 
 	useEffect(() => {
 		shapesRef.current = allShapes;
 	}, [allShapes]);
+
+	useEffect(() => {
+		const canvas = canvasRef.current;
+		if (!canvas) return;
+		const ctx = canvas.getContext("2d");
+		if (!ctx) return;
+
+		const resizeCanvas = () => {
+			const dpr = window.devicePixelRatio || 1;
+
+			canvas.width = canvas.clientWidth * dpr;
+			canvas.height = canvas.clientHeight * dpr;
+			render(
+				ctx,
+				canvas,
+				shapesRef.current,
+				currentShapeRef,
+				zoomRef.current,
+				offsetXRef.current,
+				offsetYRef.current,
+			);
+		};
+
+		resizeCanvas();
+		window.addEventListener("resize", resizeCanvas);
+
+		return () => window.removeEventListener("resize", resizeCanvas);
+	}, []);
 
 	// useEffect(() => {
 	// 	const dpr = window.devicePixelRatio || 1;

@@ -78,11 +78,6 @@ export type allToolsType =
 	| "select"
 	| "drag";
 
-export interface currentToolStateType {
-	currentTool: allToolsType;
-	changeTool: (tool: allToolsType) => void;
-}
-
 export interface currentUIStateType {
 	currentTool: allToolsType;
 	zoom: number;

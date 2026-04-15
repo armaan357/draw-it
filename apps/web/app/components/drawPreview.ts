@@ -1,13 +1,18 @@
+import { RefObject } from "react";
 import { shapeGeometryType } from "../../zustandState/storeTypes";
 
 export const drawPreview = (
 	ctx: CanvasRenderingContext2D,
-	currentShape: {
-		position: { x: number; y: number };
+	currentShapeRef: RefObject<{
+		position: {
+			x: number;
+			y: number;
+		};
 		geometry: shapeGeometryType;
-	},
+	} | null>,
 ) => {
-	ctx.strokeStyle = "white";
+	// ctx.strokeStyle = "white";
+	const currentShape = currentShapeRef.current!;
 	switch (currentShape.geometry.type) {
 		case "rect":
 			ctx.beginPath();

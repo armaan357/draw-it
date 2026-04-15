@@ -8,7 +8,6 @@ import {
 	shapesType,
 } from "../../zustandState/storeTypes";
 import { nanoid } from "nanoid";
-import { drawPreview } from "./drawPreview";
 
 export function canvasContext(
 	canvas: HTMLCanvasElement,
@@ -18,17 +17,20 @@ export function canvasContext(
 	socket: WebSocket | undefined,
 	currentTool: allToolsType,
 	changeTool: (tool: allToolsType) => void,
-	allShapes: shapesType[],
+	allShapes: RefObject<shapesType[]>,
 	addShapes: (newShape: shapesType) => void,
-	zoom: number,
-	offsetX: number,
-	offsetY: number,
+	zoomRef: RefObject<number>,
+	offsetXRef: RefObject<number>,
+	offsetYRef: RefObject<number>,
 	changeZoom: (newZoom: number) => void,
 	changeOffset: (newOffsetX: number, newOffsetY: number) => void,
-	currentShape: {
-		position: { x: number; y: number };
+	currentShapeRef: RefObject<{
+		position: {
+			x: number;
+			y: number;
+		};
 		geometry: shapeGeometryType;
-	} | null,
+	} | null>,
 ) {
 	const ctx = canvas.getContext("2d");
 	const userName: string | null = localStorage.getItem("userName")
@@ -46,7 +48,15 @@ export function canvasContext(
 	ctx.font = "16px cursive";
 	let clicked = false;
 	// drawCanvas(ctx, allShapes);
-	render(ctx, canvas, allShapes, null);
+	render(
+		ctx,
+		canvas,
+		allShapes.current,
+		currentShapeRef,
+		zoomRef.current,
+		offsetXRef.current,
+		offsetYRef.current,
+	);
 	console.log(
 		`In canvas context => clicked = ${clicked} & currentTool = ${currentTool}`,
 	);
@@ -103,7 +113,7 @@ export function canvasContext(
 		if (currentTool === "cursor") {
 			return;
 		} else if (currentTool == "text") {
-			drawCanvas(ctx, allShapes, null);
+			drawCanvas(ctx, allShapes.current, currentShapeRef);
 			ctx.fillStyle = "white";
 			text += e.key;
 			ctx.fillText(`${text}`, startX.current, startY.current);
@@ -112,12 +122,16 @@ export function canvasContext(
 
 	const findShapes = (e: MouseEvent) => {
 		console.log(`x coordinate = ${e.clientX}, y coordinate = ${e.clientY}`);
-		console.log("total shapes = ", allShapes.length);
+		console.log("total shapes = ", allShapes.current.length);
 
-		for (let i = allShapes.length - 1; i >= 0; i--) {
-			const tempShape = allShapes[i];
-			const worldX = (e.clientX - offsetX) / zoom;
-			const worldY = (e.clientY - offsetY) / zoom;
+		for (let i = allShapes.current.length - 1; i >= 0; i--) {
+			const tempShape = allShapes.current[i];
+			const rect = canvas.getBoundingClientRect();
+
+			const screenX = e.clientX - rect.left;
+			const screenY = e.clientY - rect.top;
+			const worldX = (screenX - offsetXRef.current) / zoomRef.current;
+			const worldY = (screenY - offsetYRef.current) / zoomRef.current;
 			if (!tempShape) {
 				continue;
 			}
@@ -184,8 +198,8 @@ export function canvasContext(
 			// return;
 		} else {
 			clicked = true;
-			startX.current = (e.clientX - offsetX) / zoom;
-			startY.current = (e.clientY - offsetY) / zoom;
+			startX.current = (e.clientX - offsetXRef.current) / zoomRef.current;
+			startY.current = (e.clientY - offsetYRef.current) / zoomRef.current;
 			if (currentTool == "select") {
 				return;
 			}
@@ -243,29 +257,35 @@ export function canvasContext(
 			geometry: shapeGeometryType;
 		}
 		let shapeSpecificProps: shapeSpecificType | null = null;
-		const worldX = (e.clientX - offsetX) / zoom;
-		const worldY = (e.clientY - offsetY) / zoom;
+		const rect = canvas.getBoundingClientRect();
+
+		const screenX = e.clientX - rect.left;
+		const screenY = e.clientY - rect.top;
+		const worldX = (screenX - offsetXRef.current) / zoomRef.current;
+		const worldY = (screenY - offsetYRef.current) / zoomRef.current;
 
 		if (currentTool === "rect") {
-			let width = worldX - startX.current;
-			let height = worldY - startY.current;
+			const x = Math.min(startX.current, worldX);
+			const y = Math.min(startY.current, worldY);
+			const width = Math.abs(worldX - startX.current);
+			const height = Math.abs(worldY - startY.current);
 
 			shapeSpecificProps = {
 				position: {
-					x: startX.current,
-					y: startY.current,
+					x,
+					y,
 				},
 				geometry: {
 					type: "rect",
-					width: width,
-					height: height,
+					width,
+					height,
 				},
 			};
 		} else if (currentTool === "circle") {
-			let centerX = (startX.current + worldX) / 2;
-			let centerY = (startY.current + worldY) / 2;
-			let radX = Math.abs(centerX - worldX);
-			let radY = Math.abs(centerY - worldY);
+			const centerX = (startX.current + worldX) / 2;
+			const centerY = (startY.current + worldY) / 2;
+			const radX = Math.abs(centerX - worldX);
+			const radY = Math.abs(centerY - worldY);
 
 			shapeSpecificProps = {
 				position: {
@@ -274,11 +294,14 @@ export function canvasContext(
 				},
 				geometry: {
 					type: "circle",
-					radX: radX,
-					radY: radY,
+					radX,
+					radY,
 				},
 			};
 		} else if (currentTool == "line") {
+			const dX = worldX - startX.current;
+			const dY = worldY - startY.current;
+
 			shapeSpecificProps = {
 				position: {
 					x: startX.current,
@@ -286,8 +309,8 @@ export function canvasContext(
 				},
 				geometry: {
 					type: "line",
-					dX: worldX - startX.current,
-					dY: worldY - startY.current,
+					dX,
+					dY,
 				},
 			};
 		} else if (currentTool == "draw") {
@@ -329,13 +352,22 @@ export function canvasContext(
 			},
 		};
 		addShapes(genericShape);
+		currentShapeRef.current = null;
 
 		if (roomId) {
 			// console.log('sending');
 			sendShapes(socket!, shape!, roomId, userName!);
 		}
-		// drawCanvas(ctx, allShapes);
-		render(ctx, canvas, allShapes, null);
+
+		render(
+			ctx,
+			canvas,
+			allShapes.current,
+			currentShapeRef,
+			zoomRef.current,
+			offsetXRef.current,
+			offsetYRef.current,
+		);
 	};
 
 	const handleMouseMove = (e: MouseEvent) => {
@@ -346,82 +378,134 @@ export function canvasContext(
 		canvas.addEventListener("keydown", (e) => {
 			// console.log("key pressed = ", e.key);
 		});
-		console.log("current tool in canvasContext  = ", currentTool);
-		const worldX = (e.clientX - offsetX) / zoom;
-		const worldY = (e.clientY - offsetY) / zoom;
+
+		const rect = canvas.getBoundingClientRect();
+
+		const screenX = e.clientX - rect.left;
+		const screenY = e.clientY - rect.top;
+		const worldX = (screenX - offsetXRef.current) / zoomRef.current;
+		const worldY = (screenY - offsetYRef.current) / zoomRef.current;
 
 		if (currentTool === "rect") {
-			let width = worldX - startX.current;
-			let height = worldY - startY.current;
-			// drawCanvas(ctx, allShapes);
-			currentShape = {
+			const x = Math.min(startX.current, worldX);
+			const y = Math.min(startY.current, worldY);
+			const width = Math.abs(worldX - startX.current);
+			const height = Math.abs(worldY - startY.current);
+
+			currentShapeRef.current = {
 				position: {
-					x: worldX,
-					y: worldY,
+					x,
+					y,
 				},
 				geometry: {
 					type: "rect",
-					width: width,
-					height: height,
+					width,
+					height,
 				},
 			};
-			render(ctx, canvas, allShapes, currentShape);
 		} else if (currentTool === "circle") {
-			let centerX = (startX.current + worldX) / 2;
-			let centerY = (startY.current + worldY) / 2;
-			let radX = Math.abs(centerX - worldX);
-			let radY = Math.abs(centerY - worldY);
-			drawCanvas(ctx, allShapes, null);
-			ctx.beginPath();
-			ctx.ellipse(centerX, centerY, radX, radY, 0, 0, 2 * Math.PI, false);
-			ctx.stroke();
+			const centerX = (startX.current + worldX) / 2;
+			const centerY = (startY.current + worldY) / 2;
+			const radX = Math.abs(centerX - worldX);
+			const radY = Math.abs(centerY - worldY);
+
+			currentShapeRef.current = {
+				position: {
+					x: centerX,
+					y: centerY,
+				},
+				geometry: {
+					type: "circle",
+					radX: radX,
+					radY: radY,
+				},
+			};
 		} else if (currentTool == "line") {
-			drawCanvas(ctx, allShapes, null);
-			ctx.beginPath();
-			ctx.lineJoin = "round";
-			ctx.moveTo(startX.current, startY.current);
-			ctx.lineTo(worldX, worldY);
-			ctx.lineCap = "round";
-			ctx.stroke();
+			const dX = worldX - startX.current;
+			const dY = worldY - startY.current;
+
+			currentShapeRef.current = {
+				position: {
+					x: startX.current,
+					y: startY.current,
+				},
+				geometry: {
+					type: "line",
+					dX,
+					dY,
+				},
+			};
 		} else if (currentTool == "draw") {
 			allCoordinates.push({ x: worldX, y: worldY });
-			drawCanvas(ctx, allShapes, null);
 
-			ctx.lineJoin = "round";
-			ctx.beginPath();
-			ctx.moveTo(startX.current, startY.current);
-			allCoordinates.map((a) => ctx.lineTo(a.x, a.y));
-			ctx.stroke();
+			currentShapeRef.current = {
+				position: {
+					x: startX.current,
+					y: startY.current,
+				},
+				geometry: {
+					type: "draw",
+					allCoordinates,
+				},
+			};
 		}
+		render(
+			ctx,
+			canvas,
+			allShapes.current,
+			currentShapeRef,
+			zoomRef.current,
+			offsetXRef.current,
+			offsetYRef.current,
+		);
 	};
 
-	const handleWheel = (e: MouseEvent) => {
-		console.log(e);
-		const zoomFactor = 1.1 | 0.9;
+	const handleWheel = (e: WheelEvent) => {
+		e.preventDefault();
+		const zoom = zoomRef.current;
+		const offsetX = offsetXRef.current;
+		const offsetY = offsetYRef.current;
 
-		const newZoom = zoom * zoomFactor;
-		const mouseX = (e.clientX - offsetX) / newZoom;
-		const mouseY = (e.clientY - offsetY) / newZoom;
-		const newOffsetX = mouseX - (mouseX - offsetX) * (newZoom / zoom);
-		const newOffsetY = mouseY - (mouseY - offsetY) * (newZoom / zoom);
-		changeZoom(newZoom);
-		changeOffset(newOffsetX, newOffsetY);
-		// drawCanvas(ctx, allShapes, null);
-		render(ctx, canvas, allShapes, null);
+		const zoomIntensity = 0.001;
+		const zoomFactor = Math.exp(-e.deltaY * zoomIntensity);
+
+		const rect = canvas.getBoundingClientRect();
+
+		const screenX = e.clientX - rect.left;
+		const screenY = e.clientY - rect.top;
+		const worldX = (screenX - offsetX) / zoom;
+		const worldY = (screenY - offsetY) / zoom;
+
+		const newZoom = Math.min(Math.max(zoom * zoomFactor, 0.05), 20);
+		const newOffsetX = screenX - worldX * newZoom;
+		const newOffsetY = screenY - worldY * newZoom;
+
+		requestAnimationFrame(() => {
+			changeZoom(newZoom);
+			changeOffset(newOffsetX, newOffsetY);
+		});
 	};
-
+	// render(
+	// 	ctx,
+	// 	canvas,
+	// 	allShapes.current,
+	// 	currentShapeRef,
+	// 	zoom,
+	// 	offsetX,
+	// 	offsetY,
+	// );
 	canvas.addEventListener("mousedown", handleMouseDown);
 
 	canvas.addEventListener("mouseup", handleMouseUp);
 
 	canvas.addEventListener("mousemove", handleMouseMove);
 
-	// canvas.addEventListener("wheel", handleWheel);
+	canvas.addEventListener("wheel", handleWheel, { passive: false });
 
 	return () => {
 		canvas.removeEventListener("mousedown", handleMouseDown);
 		canvas.removeEventListener("mousemove", handleMouseMove);
 		canvas.removeEventListener("mouseup", handleMouseUp);
-		// canvas.removeEventListener("wheel", handleWheel);
+		canvas.removeEventListener("wheel", handleWheel);
 	};
 }

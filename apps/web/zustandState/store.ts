@@ -3,20 +3,9 @@ import { devtools, persist } from "zustand/middleware";
 import {
 	appStoreType,
 	currentShapesStateType,
-	currentToolStateType,
 	currentUIStateType,
 	shapesType,
 } from "./storeTypes";
-
-// const createCurrentToolSlice: StateCreator<
-// 	appStoreType,
-// 	[],
-// 	[],
-// 	currentToolStateType
-// > = (set) => ({
-// 	currentTool: "cursor",
-// 	changeTool: (tool) => set((state) => ({ currentTool: tool })),
-// });
 
 const createCurrentUISlice: StateCreator<
 	appStoreType,
@@ -30,9 +19,8 @@ const createCurrentUISlice: StateCreator<
 	offSetY: 0,
 	changeTool: (tool) => set((state) => ({ currentTool: tool })),
 	changeZoom: (newZoom) => set((state) => ({ zoom: newZoom })),
-	changeOffset: (newOffsetX, newOffsetY) => {
-		return { offsetX: newOffsetX, offsetY: newOffsetY };
-	},
+	changeOffset: (newOffsetX, newOffsetY) =>
+		set((state) => ({ offsetX: newOffsetX, offSetY: newOffsetY })),
 });
 
 const currentShapesSlice: StateCreator<

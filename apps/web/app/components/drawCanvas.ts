@@ -1,3 +1,4 @@
+import { RefObject } from "react";
 import { shapeGeometryType, shapesType } from "../../zustandState/storeTypes";
 import { drawPreview } from "./drawPreview";
 
@@ -5,37 +6,50 @@ export const render = (
 	ctx: CanvasRenderingContext2D,
 	canvas: HTMLCanvasElement,
 	allShapes: shapesType[],
-	currentShape: {
-		position: { x: number; y: number };
+	currentShapeRef: RefObject<{
+		position: {
+			x: number;
+			y: number;
+		};
 		geometry: shapeGeometryType;
-	} | null,
+	} | null>,
+	zoom: number,
+	offsetX: number,
+	offsetY: number,
 ) => {
 	const dpr = window.devicePixelRatio || 1;
 
 	ctx.strokeStyle = "white";
+	ctx.lineWidth = 1.5;
+	ctx.letterSpacing = "2px";
+	ctx.fontKerning = "normal";
+	ctx.font = "16px cursive";
 	ctx.setTransform(1, 0, 0, 1, 0, 0);
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-	// ctx.setTransform(
-	// 	zoom * dpr,
-	// 	0,
-	// 	0,
-	// 	zoom * dpr,
-	// 	offsetX * dpr,
-	// 	offsetY * dpr,
-	// );
-	ctx.setTransform(1, 0, 0, 1, 0, 0);
+	ctx.setTransform(
+		zoom * dpr,
+		0,
+		0,
+		zoom * dpr,
+		offsetX * dpr,
+		offsetY * dpr,
+	);
+	// ctx.setTransform(1, 0, 0, 1, 0, 0);
 
-	drawCanvas(ctx, allShapes, currentShape);
+	drawCanvas(ctx, allShapes, currentShapeRef);
 };
 
 export function drawCanvas(
 	ctx: CanvasRenderingContext2D,
 	allShapes: shapesType[],
-	currentShape: {
-		position: { x: number; y: number };
+	currentShapeRef: RefObject<{
+		position: {
+			x: number;
+			y: number;
+		};
 		geometry: shapeGeometryType;
-	} | null,
+	} | null>,
 ) {
 	ctx.strokeStyle = "white";
 	// ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -45,9 +59,6 @@ export function drawCanvas(
 		return;
 	}
 
-	if (allShapes.length === 0) {
-		return;
-	}
 	allShapes.forEach((s) => {
 		switch (s.geometry.type) {
 			case "rect":
@@ -97,4 +108,7 @@ export function drawCanvas(
 				break;
 		}
 	});
+	if (currentShapeRef.current) {
+		drawPreview(ctx, currentShapeRef);
+	}
 }
