@@ -2,6 +2,18 @@ import { RefObject } from "react";
 import { shapeGeometryType, shapesType } from "../../zustandState/storeTypes";
 import { drawPreview } from "./drawPreview";
 
+export interface currShapeBoundingBoxType {
+	id: string;
+	position: {
+		x: number;
+		y: number;
+	};
+	geometry: {
+		width: number;
+		height: number;
+	};
+}
+
 export const render = (
 	ctx: CanvasRenderingContext2D,
 	canvas: HTMLCanvasElement,
@@ -13,6 +25,7 @@ export const render = (
 		};
 		geometry: shapeGeometryType;
 	} | null>,
+	currentSelectedShapeRef: RefObject<currShapeBoundingBoxType | null>,
 	zoom: number,
 	offsetX: number,
 	offsetY: number,
@@ -37,7 +50,7 @@ export const render = (
 	);
 	// ctx.setTransform(1, 0, 0, 1, 0, 0);
 
-	drawCanvas(ctx, allShapes, currentShapeRef);
+	drawCanvas(ctx, allShapes, currentShapeRef, currentSelectedShapeRef);
 };
 
 export function drawCanvas(
@@ -50,6 +63,7 @@ export function drawCanvas(
 		};
 		geometry: shapeGeometryType;
 	} | null>,
+	currentSelectedShapeRef: RefObject<currShapeBoundingBoxType | null>,
 ) {
 	ctx.strokeStyle = "white";
 	// ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -108,7 +122,23 @@ export function drawCanvas(
 				break;
 		}
 	});
+
+	if (currentSelectedShapeRef.current) {
+		drawBoundingBox(ctx, currentSelectedShapeRef.current);
+		return;
+	}
 	if (currentShapeRef.current) {
 		drawPreview(ctx, currentShapeRef);
 	}
 }
+
+const drawBoundingBox = (
+	ctx: CanvasRenderingContext2D,
+	s: currShapeBoundingBoxType,
+) => {
+	ctx.strokeStyle = "#0096FF";
+	ctx.lineWidth = 1;
+	ctx.beginPath();
+	ctx.rect(s.position.x, s.position.y, s.geometry.width, s.geometry.height);
+	ctx.stroke();
+};

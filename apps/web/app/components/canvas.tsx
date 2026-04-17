@@ -1,7 +1,7 @@
 "use client"
 import { useEffect, useRef } from "react";
 import { canvasContext } from "./canvasContext";
-import { render } from "./drawCanvas";
+import { currShapeBoundingBoxType, render } from "./drawCanvas";
 import { ShapeToolbar } from "./shapeToolbar";
 import { CanvasMenu } from "./canvasMenu";
 import { CustomizationToolbar } from "./customizationToolbar";
@@ -53,6 +53,7 @@ export function Canvas({
 		position: { x: number; y: number };
 		geometry: shapeGeometryType;
 	} | null>(null);
+	const currSelectedShapeRef = useRef<currShapeBoundingBoxType>(null);
 
 	useEffect(() => {
 		if (!canvasRef.current) {
@@ -75,6 +76,7 @@ export function Canvas({
 			changeZoom,
 			changeOffset,
 			currentShapeRef,
+			currSelectedShapeRef,
 		);
 		return cleanUp;
 	}, [currentTool]);
@@ -90,7 +92,16 @@ export function Canvas({
 		canvas.width = canvas.clientWidth * dpr;
 		canvas.height = canvas.clientHeight * dpr;
 
-		render(ctx, canvas, allShapes, currentShapeRef, zoom, offsetX, offsetY);
+		render(
+			ctx,
+			canvas,
+			allShapes,
+			currentShapeRef,
+			currSelectedShapeRef,
+			zoom,
+			offsetX,
+			offsetY,
+		);
 	}, [allShapes, zoom, offsetX, offsetY]);
 
 	useEffect(() => {
@@ -122,6 +133,7 @@ export function Canvas({
 				canvas,
 				shapesRef.current,
 				currentShapeRef,
+				currSelectedShapeRef,
 				zoomRef.current,
 				offsetXRef.current,
 				offsetYRef.current,

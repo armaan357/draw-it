@@ -1,7 +1,7 @@
 import { RefObject } from "react";
 import { coordinatesType } from "../utils";
 import sendShapes from "./sendShapes";
-import { drawCanvas, render } from "./drawCanvas";
+import { currShapeBoundingBoxType, drawCanvas, render } from "./drawCanvas";
 import {
 	allToolsType,
 	shapeGeometryType,
@@ -9,6 +9,7 @@ import {
 } from "../../zustandState/storeTypes";
 import { nanoid } from "nanoid";
 
+//remove all the draw function calls after fixing everything
 export function canvasContext(
 	canvas: HTMLCanvasElement,
 	startX: RefObject<number>,
@@ -31,6 +32,7 @@ export function canvasContext(
 		};
 		geometry: shapeGeometryType;
 	} | null>,
+	currSelectedShapeRef: RefObject<currShapeBoundingBoxType | null>,
 ) {
 	const ctx = canvas.getContext("2d");
 	const userName: string | null = localStorage.getItem("userName")
@@ -53,6 +55,7 @@ export function canvasContext(
 		canvas,
 		allShapes.current,
 		currentShapeRef,
+		currSelectedShapeRef,
 		zoomRef.current,
 		offsetXRef.current,
 		offsetYRef.current,
@@ -113,7 +116,16 @@ export function canvasContext(
 		if (currentTool === "cursor") {
 			return;
 		} else if (currentTool == "text") {
-			drawCanvas(ctx, allShapes.current, currentShapeRef);
+			render(
+				ctx,
+				canvas,
+				allShapes.current,
+				currentShapeRef,
+				currSelectedShapeRef,
+				zoomRef.current,
+				offsetXRef.current,
+				offsetYRef.current,
+			);
 			ctx.fillStyle = "white";
 			text += e.key;
 			ctx.fillText(`${text}`, startX.current, startY.current);
@@ -148,6 +160,24 @@ export function canvasContext(
 				if (isInXAxis && isInYAxis) {
 					console.log(tempShape.id);
 					console.log(tempShape);
+					currSelectedShapeRef.current = {
+						id: tempShape.id,
+						position: tempShape.position,
+						geometry: {
+							width: tempShape.geometry.width,
+							height: tempShape.geometry.height,
+						},
+					};
+					render(
+						ctx,
+						canvas,
+						allShapes.current,
+						currentShapeRef,
+						currSelectedShapeRef,
+						zoomRef.current,
+						offsetXRef.current,
+						offsetYRef.current,
+					);
 					return;
 				}
 			} else if (tempShape.geometry.type === "circle") {
@@ -364,6 +394,7 @@ export function canvasContext(
 			canvas,
 			allShapes.current,
 			currentShapeRef,
+			currSelectedShapeRef,
 			zoomRef.current,
 			offsetXRef.current,
 			offsetYRef.current,
@@ -454,10 +485,49 @@ export function canvasContext(
 			canvas,
 			allShapes.current,
 			currentShapeRef,
+			currSelectedShapeRef,
 			zoomRef.current,
 			offsetXRef.current,
 			offsetYRef.current,
 		);
+		if (currentTool === "drag") {
+			const startMousePos = {
+				x: startX.current,
+				y: startY.current,
+			};
+
+			const currMousePos = {
+				x: worldX,
+				y: worldY,
+			};
+
+			startX.current = worldX;
+			startY.current = worldY;
+
+			const diff = diffPoints(startMousePos, currMousePos);
+
+			requestAnimationFrame(() => {
+				const newTempOffset = addPoints(
+					{ x: offsetXRef.current, y: offsetYRef.current },
+					diff,
+				);
+				changeOffset(newTempOffset.x, newTempOffset.y);
+			});
+		}
+	};
+
+	const diffPoints = (
+		p1: { x: number; y: number },
+		p2: { x: number; y: number },
+	) => {
+		return { x: p2.x - p1.x, y: p2.y - p1.y };
+	};
+
+	const addPoints = (
+		prevOffset: { x: number; y: number },
+		diff: { x: number; y: number },
+	) => {
+		return { x: prevOffset.x + diff.x, y: prevOffset.y + diff.y };
 	};
 
 	const handleWheel = (e: WheelEvent) => {
@@ -485,15 +555,7 @@ export function canvasContext(
 			changeOffset(newOffsetX, newOffsetY);
 		});
 	};
-	// render(
-	// 	ctx,
-	// 	canvas,
-	// 	allShapes.current,
-	// 	currentShapeRef,
-	// 	zoom,
-	// 	offsetX,
-	// 	offsetY,
-	// );
+
 	canvas.addEventListener("mousedown", handleMouseDown);
 
 	canvas.addEventListener("mouseup", handleMouseUp);
