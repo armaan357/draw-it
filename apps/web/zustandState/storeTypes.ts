@@ -17,6 +17,8 @@ export type shapeGeometryType =
 	| {
 			type: "draw";
 			allCoordinates: { x: number; y: number }[];
+			minCoordinates: { x: number; y: number };
+			maxCoordinates: { x: number; y: number };
 	  }
 	| {
 			type: "text";
@@ -88,4 +90,18 @@ export interface currentUIStateType {
 	changeOffset: (newOffsetX: number, newOffsetY: number) => void;
 }
 
-export type appStoreType = currentUIStateType & currentShapesStateType;
+export interface textAreaStateType {
+	isTextAreaActive: boolean;
+	textAreaScreenX: number;
+	textAreaScreenY: number;
+	textAreaValue: string;
+	textAreaEditingShapeId?: string;
+	setIsTextAreaActive: (toggle: boolean) => void;
+	setTextAreaPosition: (worldX: number, worldY: number) => void;
+	setTextAreaValue: (val: string) => void;
+	setTextAreaEditingShapeId: (id: string) => void;
+}
+
+export type appStoreType = currentUIStateType &
+	textAreaStateType &
+	currentShapesStateType;

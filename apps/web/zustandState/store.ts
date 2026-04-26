@@ -5,6 +5,7 @@ import {
 	currentShapesStateType,
 	currentUIStateType,
 	shapesType,
+	textAreaStateType,
 } from "./storeTypes";
 
 const createCurrentUISlice: StateCreator<
@@ -21,6 +22,29 @@ const createCurrentUISlice: StateCreator<
 	changeZoom: (newZoom) => set((state) => ({ zoom: newZoom })),
 	changeOffset: (newOffsetX, newOffsetY) =>
 		set((state) => ({ offsetX: newOffsetX, offSetY: newOffsetY })),
+});
+
+const textAreaStateSlice: StateCreator<
+	appStoreType,
+	[],
+	[],
+	textAreaStateType
+> = (set) => ({
+	isTextAreaActive: false,
+	textAreaScreenX: 0,
+	textAreaScreenY: 0,
+	textAreaValue: "",
+	textAreaEditingShapeId: "",
+	setIsTextAreaActive: (toggle) =>
+		set((state) => ({ isTextAreaActive: toggle })),
+	setTextAreaPosition: (worldX, worldY) =>
+		set((state) => ({
+			textAreaScreenX: worldX * state.zoom + state.offsetX - 6,
+			textAreaScreenY: worldY * state.zoom + state.offSetY - 6,
+		})),
+	setTextAreaValue: (val) => set((state) => ({ textAreaValue: val })),
+	setTextAreaEditingShapeId: (id) =>
+		set((state) => ({ textAreaEditingShapeId: id })),
 });
 
 const currentShapesSlice: StateCreator<
@@ -121,6 +145,7 @@ export const useAppStore = create<appStoreType>()(
 	persist(
 		(...a) => ({
 			...createCurrentUISlice(...a),
+			...textAreaStateSlice(...a),
 			...currentShapesSlice(...a),
 		}),
 		{

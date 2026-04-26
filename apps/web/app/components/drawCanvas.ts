@@ -9,6 +9,7 @@ export interface currShapeBoundingBoxType {
 		y: number;
 	};
 	geometry: {
+		type: "rect" | "circle" | "line" | "draw" | "text";
 		width: number;
 		height: number;
 	};
@@ -36,7 +37,10 @@ export const render = (
 	ctx.lineWidth = 1.5;
 	ctx.letterSpacing = "2px";
 	ctx.fontKerning = "normal";
+	ctx.letterSpacing = "2px";
 	ctx.font = "16px cursive";
+	ctx.textAlign = "left";
+	ctx.textBaseline = "top";
 	ctx.setTransform(1, 0, 0, 1, 0, 0);
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -117,8 +121,14 @@ export function drawCanvas(
 				ctx.stroke();
 				break;
 			case "text":
-				ctx.fillStyle = "white";
-				ctx.fillText(s.geometry.text, s.position.x, s.position.y);
+				const textLineArray = s.geometry.text.split("\n");
+				// console.log(textLineArray);
+				let y = s.position.y;
+				textLineArray.forEach((line) => {
+					ctx.fillStyle = "white";
+					ctx.fillText(line, s.position.x, y);
+					y += 24;
+				});
 				break;
 		}
 	});
@@ -136,9 +146,24 @@ const drawBoundingBox = (
 	ctx: CanvasRenderingContext2D,
 	s: currShapeBoundingBoxType,
 ) => {
-	ctx.strokeStyle = "#0096FF";
+	ctx.strokeStyle = "#2f80ed";
 	ctx.lineWidth = 1;
 	ctx.beginPath();
-	ctx.rect(s.position.x, s.position.y, s.geometry.width, s.geometry.height);
+	if (s.geometry.type === "text") {
+		ctx.rect(
+			s.position.x - 6,
+			s.position.y - 4,
+			s.geometry.width + 12,
+			s.geometry.height,
+		);
+	} else {
+		ctx.rect(
+			s.position.x,
+			s.position.y,
+			s.geometry.width,
+			s.geometry.height,
+		);
+	}
+
 	ctx.stroke();
 };
