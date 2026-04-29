@@ -18,9 +18,9 @@ export function canvasContext(
 	roomId: string | null,
 	socket: WebSocket | undefined,
 	currentTool: allToolsType,
-	changeTool: (tool: allToolsType) => void,
 	setIsTextAreaActive: (toggle: boolean) => void,
 	setTextAreaPosition: (worldX: number, worldY: number) => void,
+	setTextAreaValue: (value: string) => void,
 	allShapes: RefObject<shapesType[]>,
 	addShapes: (newShape: shapesType) => void,
 	zoomRef: RefObject<number>,
@@ -36,7 +36,7 @@ export function canvasContext(
 		geometry: shapeGeometryType;
 	} | null>,
 	currSelectedShapeRef: RefObject<currShapeBoundingBoxType | null>,
-	isTextAreaActive: RefObject<{
+	isTextAreaActiveRef: RefObject<{
 		isActive: boolean;
 		position: { x: number; y: number } | null;
 	}>,
@@ -106,9 +106,9 @@ export function canvasContext(
 	const findShapes = (e: MouseEvent) => {
 		console.log(`x coordinate = ${e.clientX}, y coordinate = ${e.clientY}`);
 		console.log("total shapes = ", allShapes.current.length);
-		let i = allShapes.current.length - 1
+		let i = allShapes.current.length - 1;
 
-		for ( ; i >= 0; i--) {
+		for (; i >= 0; i--) {
 			const tempShape = allShapes.current[i];
 			const rect = canvas.getBoundingClientRect();
 
@@ -183,8 +183,8 @@ export function canvasContext(
 						},
 						geometry: {
 							type: "circle",
-							width: semiMajorAxis * 2,
-							height: semiMinorAxis * 2,
+							width: tempShape.geometry.radX * 2,
+							height: tempShape.geometry.radY * 2,
 						},
 					};
 					render(
@@ -223,7 +223,7 @@ export function canvasContext(
 						id: tempShape.id,
 						position: tempShape.position,
 						geometry: {
-							type: 'line',
+							type: "line",
 							width: tempShape.geometry.dX,
 							height: tempShape.geometry.dY,
 						},
@@ -240,7 +240,7 @@ export function canvasContext(
 					);
 					return;
 				}
-			} 
+			}
 			// else if(tempShape.geometry.type === "draw") {
 			// 	let x1 = tempShape.position.x;
 			// 	let y1 = tempShape.position.y;
@@ -289,22 +289,29 @@ export function canvasContext(
 			// 	}
 			// }
 			// }
-			else if(tempShape.geometry.type === "text") {
+			else if (tempShape.geometry.type === "text") {
 				const isInXAxis =
 					worldX >= tempShape.position.x - 6 &&
-					worldX <= (tempShape.geometry.width + 12) + (tempShape.position.x - 6);
+					worldX <=
+						tempShape.geometry.width +
+							12 +
+							(tempShape.position.x - 6);
 				const isInYAxis =
 					worldY >= tempShape.position.y - 4 &&
-					worldY <= (tempShape.geometry.height) + (tempShape.position.y - 4);
-					if (isInXAxis && isInYAxis) {
+					worldY <=
+						tempShape.geometry.height + (tempShape.position.y - 4);
+				if (isInXAxis && isInYAxis) {
 					console.log(tempShape.id);
 					console.log(tempShape);
 					currSelectedShapeRef.current = {
 						id: tempShape.id,
-						position: tempShape.position,
+						position: {
+							x: tempShape.position.x - 6,
+							y: tempShape.position.y - 4,
+						},
 						geometry: {
 							type: "text",
-							width: tempShape.geometry.width,
+							width: tempShape.geometry.width + 12,
 							height: tempShape.geometry.height,
 						},
 					};
@@ -318,10 +325,17 @@ export function canvasContext(
 						offsetXRef.current,
 						offsetYRef.current,
 					);
+					setTextAreaValue(tempShape.geometry.text);
+					toggleTextArea(
+						true,
+						setIsTextAreaActive,
+						setTextAreaPosition,
+						tempShape.position.x,
+						tempShape.position.y,
+					);
 					return;
 				}
-			}
-			else {
+			} else {
 				currSelectedShapeRef.current = null;
 				render(
 					ctx,
@@ -342,10 +356,15 @@ export function canvasContext(
 			findShapes(e);
 			// return;
 		} else {
+			// currSelectedShapeRef.current = null;
+			console.log("canvasContext() text mouse down called.");
 			clicked = true;
 			startX.current = (e.clientX - offsetXRef.current) / zoomRef.current;
 			startY.current = (e.clientY - offsetYRef.current) / zoomRef.current;
-			if (currentTool == "text" && !(isTextAreaActive.current.isActive)) {
+			if (
+				currentTool == "text" &&
+				!isTextAreaActiveRef.current.isActive
+			) {
 				toggleTextArea(
 					true,
 					setIsTextAreaActive,
@@ -353,12 +372,6 @@ export function canvasContext(
 					startX.current,
 					startY.current,
 				);
-				console.log(`clientX = ${e.clientX}, clienTY = ${e.clientY}`);
-				// document.addEventListener("keydown", writeText);
-			}
-			else if(currentTool == "text" && isTextAreaActive.current.isActive){
-				const textMetrics = ctx.measureText("hello");
-				console.log("input box width = ", textMetrics.width);
 			}
 		}
 	};
@@ -468,7 +481,7 @@ export function canvasContext(
 				},
 			};
 		} else if (currentTool == "draw") {
-			if(currentShapeRef.current?.geometry.type !== "draw")  return;
+			if (currentShapeRef.current?.geometry.type !== "draw") return;
 			shapeSpecificProps = {
 				position: {
 					x: startX.current,
@@ -477,8 +490,10 @@ export function canvasContext(
 				geometry: {
 					type: "draw",
 					allCoordinates: allCoordinates,
-					minCoordinates: currentShapeRef.current.geometry.minCoordinates,
-					maxCoordinates: currentShapeRef.current.geometry.maxCoordinates,
+					minCoordinates:
+						currentShapeRef.current.geometry.minCoordinates,
+					maxCoordinates:
+						currentShapeRef.current.geometry.maxCoordinates,
 				},
 			};
 			allCoordinates = [];
@@ -611,9 +626,8 @@ export function canvasContext(
 					maxCoordinates: {
 						x: Math.max(startX.current, worldX),
 						y: Math.max(startX.current, worldY),
-					}
+					},
 				},
-				
 			};
 		}
 		render(
@@ -628,13 +642,13 @@ export function canvasContext(
 		);
 		if (currentTool === "drag") {
 			const startMousePos = {
-				x: startX.current,
-				y: startY.current,
+				x: startX.current * zoomRef.current + offsetXRef.current,
+				y: startY.current * zoomRef.current + offsetYRef.current,
 			};
 
 			const currMousePos = {
-				x: worldX,
-				y: worldY,
+				x: worldX * zoomRef.current + offsetXRef.current,
+				y: worldY * zoomRef.current + offsetYRef.current,
 			};
 
 			startX.current = worldX;

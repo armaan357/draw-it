@@ -37,7 +37,7 @@ export const render = (
 	ctx.lineWidth = 1.5;
 	ctx.letterSpacing = "2px";
 	ctx.fontKerning = "normal";
-	ctx.letterSpacing = "2px";
+	ctx.letterSpacing = "0.1em";
 	ctx.font = "16px cursive";
 	ctx.textAlign = "left";
 	ctx.textBaseline = "top";
@@ -52,7 +52,6 @@ export const render = (
 		offsetX * dpr,
 		offsetY * dpr,
 	);
-	// ctx.setTransform(1, 0, 0, 1, 0, 0);
 
 	drawCanvas(ctx, allShapes, currentShapeRef, currentSelectedShapeRef);
 };
@@ -70,10 +69,8 @@ export function drawCanvas(
 	currentSelectedShapeRef: RefObject<currShapeBoundingBoxType | null>,
 ) {
 	ctx.strokeStyle = "white";
-	// ctx.clearRect(0, 0, canvas.width, canvas.height);
 
 	if (!allShapes) {
-		// console.log('All shapes does not exist');
 		return;
 	}
 
@@ -149,15 +146,16 @@ const drawBoundingBox = (
 	ctx.strokeStyle = "#2f80ed";
 	ctx.lineWidth = 1;
 	ctx.beginPath();
-	if (s.geometry.type === "text") {
-		ctx.rect(
-			s.position.x - 6,
-			s.position.y - 4,
-			s.geometry.width + 12,
-			s.geometry.height,
+	if (s.geometry.type === "line") {
+		ctx.beginPath();
+		ctx.moveTo(s.position.x, s.position.y);
+		ctx.lineTo(
+			s.geometry.width + s.position.x,
+			s.geometry.height + s.position.y,
 		);
+		ctx.stroke();
 	} else {
-		ctx.rect(
+		ctx.strokeRect(
 			s.position.x,
 			s.position.y,
 			s.geometry.width,
@@ -165,5 +163,55 @@ const drawBoundingBox = (
 		);
 	}
 
-	ctx.stroke();
+	ctx.fillStyle = "black";
+	ctx.fillRect(s.position.x - 4, s.position.y - 4, 8, 8);
+	ctx.fillRect(
+		s.position.x + s.geometry.width - 4,
+		s.position.y + s.geometry.height - 4,
+		8,
+		8,
+	);
+	ctx.strokeRect(s.position.x - 4, s.position.y - 4, 8, 8);
+	ctx.strokeRect(
+		s.position.x + s.geometry.width - 4,
+		s.position.y + s.geometry.height - 4,
+		8,
+		8,
+	);
+	if (s.geometry.type !== "line") {
+		ctx.fillRect(
+			s.position.x + s.geometry.width - 4,
+			s.position.y - 4,
+			8,
+			8,
+		);
+		ctx.fillRect(
+			s.position.x - 4,
+			s.position.y + s.geometry.height - 4,
+			8,
+			8,
+		);
+		ctx.strokeRect(
+			s.position.x + s.geometry.width - 4,
+			s.position.y - 4,
+			8,
+			8,
+		);
+		ctx.strokeRect(
+			s.position.x - 4,
+			s.position.y + s.geometry.height - 4,
+			8,
+			8,
+		);
+	}
+	// ctx.setTransform(1 * dpr, 0, 0, 1 * dpr, 0, 0);
+
+	// ctx.setTransform(
+	// 	zoom * dpr,
+	// 	0,
+	// 	0,
+	// 	zoom * dpr,
+	// 	offsetX * dpr,
+	// 	offsetY * dpr,
+	// );
 };

@@ -102,10 +102,9 @@ export function Canvas({
 
 	useEffect(() => {
 		const textArea = textAreaRef.current;
+
 		if (textArea) {
-			textArea.style.width = "40px";
-			textArea.style.height = "50px";
-			textArea.style.width = `${textArea.scrollWidth}px`;
+			// textArea.style.height = "50px";
 			textArea.style.height = `${textArea.scrollHeight}px`;
 		}
 	}, [textAreaValue]);
@@ -122,9 +121,9 @@ export function Canvas({
 			roomId,
 			socket,
 			currentTool,
-			changeTool,
 			setIsTextAreaActive,
 			setTextAreaPosition,
+			setTextAreaValue,
 			shapesRef,
 			addShapes,
 			zoomRef,
@@ -176,6 +175,10 @@ export function Canvas({
 	}, [allShapes]);
 
 	useEffect(() => {
+		isTextAreaActiveRef.current.isActive = isTextAreaActive;
+	}, [isTextAreaActive]);
+
+	useEffect(() => {
 		const canvas = canvasRef.current;
 		if (!canvas) return;
 		const ctx = canvas.getContext("2d");
@@ -205,8 +208,11 @@ export function Canvas({
 	}, []);
 
 	const renderText = (position: { x: number; y: number }, value: string) => {
+		if (value === "") return;
+
 		const canvas = canvasRef.current;
 		if (!canvas) return;
+
 		const ctx = canvas.getContext("2d");
 		if (!ctx) return;
 
@@ -263,15 +269,10 @@ export function Canvas({
 	};
 
 	const handleTextAreaSubmit = () => {
-		if (textAreaValue === "") {
-			// toggleTextArea(false, setIsTextAreaActive, setTextAreaPosition);
-			return;
-		}
 		const textPosition = {
 			x: (textAreaScreenX + 2 - offsetXRef.current) / zoomRef.current,
 			y: (textAreaScreenY + 6 - offsetYRef.current) / zoomRef.current,
 		};
-		// console.log(JSON.stringify(textAreaValue));
 		renderText(textPosition, textAreaValue);
 
 		toggleTextArea(false, setIsTextAreaActive, setTextAreaPosition);
@@ -327,12 +328,13 @@ export function Canvas({
 				ref={canvasRef}
 				className="bg-[#101011] overflow-hidden w-screen h-screen block"
 			></canvas>
-			<ShapeToolbar />
+			<ShapeToolbar currentSelectedShapeRef={currSelectedShapeRef} />
 			{isTextAreaActive && (
 				<textarea
 					id="text-area"
 					ref={textAreaRef}
-					className={`resize-none absolute whitespace-pre-wrap break-words h-fit bg-white/30 text-white border-none focus-within:border-none focus-visible:border-none active:border-none active:ring-0 active:outline-none focus-within:outline-none overflow-hidden`}
+					className={`resize-none absolute min-h-12.5 whitespace-pre-wrap wrap-break-word bg-white/30 text-white border-none focus-within:border-none focus-visible:border-none active:border-none active:ring-0 active:outline-none focus-within:outline-none overflow-y-hidden tracking-widest`}
+					value={textAreaValue}
 					onBlur={() => handleTextAreaSubmit()}
 					onChange={() => {
 						if (textAreaRef.current)
@@ -341,23 +343,21 @@ export function Canvas({
 					onMouseDown={() =>
 						(isTextAreaActiveRef.current.isActive = true)
 					}
-					onKeyDown={(e) => {
-						if (e.key === "Enter") {
-							if (!e.shiftKey) {
-								e.preventDefault();
-								handleTextAreaSubmit();
-							}
-						}
-					}}
+					// onKeyDown={(e) => {
+					// 	if (e.key === "Enter") {
+					// 		if (!e.shiftKey) {
+					// 			e.preventDefault();
+					// 			handleTextAreaSubmit();
+					// 		}
+					// 	}
+					// }}
 					autoCapitalize="none"
-					wrap="off"
+					// wrap="off"
 					style={{
-						font: `16px ${canvasRef.current?.getContext("2d")?.font}`,
-						letterSpacing: "2px",
+						font: `16px cursive`,
 						left: `${textAreaScreenX}px`,
 						top: `${textAreaScreenY}px`,
-						minWidth: "25px",
-						width: "25px",
+						width: `${canvasRef.current?.clientWidth! - textAreaScreenX - 15}px`,
 					}}
 				/>
 			)}
