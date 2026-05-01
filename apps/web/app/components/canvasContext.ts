@@ -13,22 +13,22 @@ import { toggleTextArea } from "../logic/toggleTextArea";
 //remove all the draw function calls after fixing everything
 export function canvasContext(
 	canvas: HTMLCanvasElement,
-	startX: RefObject<number>,
-	startY: RefObject<number>,
+	startXRef: RefObject<number>,
+	startYRef: RefObject<number>,
 	roomId: string | null,
 	socket: WebSocket | undefined,
 	currentTool: allToolsType,
+	allShapes: RefObject<shapesType[]>,
+	addShapes: (newShape: shapesType) => void,
 	setIsTextAreaActive: (toggle: boolean) => void,
 	setTextAreaPosition: (worldX: number, worldY: number) => void,
 	setTextAreaValue: (value: string) => void,
-	allShapes: RefObject<shapesType[]>,
-	addShapes: (newShape: shapesType) => void,
 	zoomRef: RefObject<number>,
 	offsetXRef: RefObject<number>,
 	offsetYRef: RefObject<number>,
 	changeZoom: (newZoom: number) => void,
 	changeOffset: (newOffsetX: number, newOffsetY: number) => void,
-	currentShapeRef: RefObject<{
+	currentShapeBeingDrawnRef: RefObject<{
 		position: {
 			x: number;
 			y: number;
@@ -61,7 +61,7 @@ export function canvasContext(
 		ctx,
 		canvas,
 		allShapes.current,
-		currentShapeRef,
+		currentShapeBeingDrawnRef,
 		currSelectedShapeRef,
 		zoomRef.current,
 		offsetXRef.current,
@@ -145,7 +145,7 @@ export function canvasContext(
 						ctx,
 						canvas,
 						allShapes.current,
-						currentShapeRef,
+						currentShapeBeingDrawnRef,
 						currSelectedShapeRef,
 						zoomRef.current,
 						offsetXRef.current,
@@ -191,7 +191,7 @@ export function canvasContext(
 						ctx,
 						canvas,
 						allShapes.current,
-						currentShapeRef,
+						currentShapeBeingDrawnRef,
 						currSelectedShapeRef,
 						zoomRef.current,
 						offsetXRef.current,
@@ -232,7 +232,7 @@ export function canvasContext(
 						ctx,
 						canvas,
 						allShapes.current,
-						currentShapeRef,
+						currentShapeBeingDrawnRef,
 						currSelectedShapeRef,
 						zoomRef.current,
 						offsetXRef.current,
@@ -279,7 +279,7 @@ export function canvasContext(
 			// 			ctx,
 			// 			canvas,
 			// 			allShapes.current,
-			// 			currentShapeRef,
+			// 			currentShapeBeingDrawnRef,
 			// 			currSelectedShapeRef,
 			// 			zoomRef.current,
 			// 			offsetXRef.current,
@@ -319,7 +319,7 @@ export function canvasContext(
 						ctx,
 						canvas,
 						allShapes.current,
-						currentShapeRef,
+						currentShapeBeingDrawnRef,
 						currSelectedShapeRef,
 						zoomRef.current,
 						offsetXRef.current,
@@ -341,7 +341,7 @@ export function canvasContext(
 					ctx,
 					canvas,
 					allShapes.current,
-					currentShapeRef,
+					currentShapeBeingDrawnRef,
 					currSelectedShapeRef,
 					zoomRef.current,
 					offsetXRef.current,
@@ -359,8 +359,8 @@ export function canvasContext(
 			// currSelectedShapeRef.current = null;
 			console.log("canvasContext() text mouse down called.");
 			clicked = true;
-			startX.current = (e.clientX - offsetXRef.current) / zoomRef.current;
-			startY.current = (e.clientY - offsetYRef.current) / zoomRef.current;
+			startXRef.current = (e.clientX - offsetXRef.current) / zoomRef.current;
+			startYRef.current = (e.clientY - offsetYRef.current) / zoomRef.current;
 			if (
 				currentTool == "text" &&
 				!isTextAreaActiveRef.current.isActive
@@ -369,8 +369,8 @@ export function canvasContext(
 					true,
 					setIsTextAreaActive,
 					setTextAreaPosition,
-					startX.current,
-					startY.current,
+					startXRef.current,
+					startYRef.current,
 				);
 			}
 		}
@@ -432,10 +432,10 @@ export function canvasContext(
 		const worldY = (screenY - offsetYRef.current) / zoomRef.current;
 
 		if (currentTool === "rect") {
-			const x = Math.min(startX.current, worldX);
-			const y = Math.min(startY.current, worldY);
-			const width = Math.abs(worldX - startX.current);
-			const height = Math.abs(worldY - startY.current);
+			const x = Math.min(startXRef.current, worldX);
+			const y = Math.min(startYRef.current, worldY);
+			const width = Math.abs(worldX - startXRef.current);
+			const height = Math.abs(worldY - startYRef.current);
 
 			shapeSpecificProps = {
 				position: {
@@ -449,8 +449,8 @@ export function canvasContext(
 				},
 			};
 		} else if (currentTool === "circle") {
-			const centerX = (startX.current + worldX) / 2;
-			const centerY = (startY.current + worldY) / 2;
+			const centerX = (startXRef.current + worldX) / 2;
+			const centerY = (startYRef.current + worldY) / 2;
 			const radX = Math.abs(centerX - worldX);
 			const radY = Math.abs(centerY - worldY);
 
@@ -466,13 +466,13 @@ export function canvasContext(
 				},
 			};
 		} else if (currentTool == "line") {
-			const dX = worldX - startX.current;
-			const dY = worldY - startY.current;
+			const dX = worldX - startXRef.current;
+			const dY = worldY - startYRef.current;
 
 			shapeSpecificProps = {
 				position: {
-					x: startX.current,
-					y: startY.current,
+					x: startXRef.current,
+					y: startYRef.current,
 				},
 				geometry: {
 					type: "line",
@@ -481,19 +481,19 @@ export function canvasContext(
 				},
 			};
 		} else if (currentTool == "draw") {
-			if (currentShapeRef.current?.geometry.type !== "draw") return;
+			if (currentShapeBeingDrawnRef.current?.geometry.type !== "draw") return;
 			shapeSpecificProps = {
 				position: {
-					x: startX.current,
-					y: startY.current,
+					x: startXRef.current,
+					y: startYRef.current,
 				},
 				geometry: {
 					type: "draw",
 					allCoordinates: allCoordinates,
 					minCoordinates:
-						currentShapeRef.current.geometry.minCoordinates,
+						currentShapeBeingDrawnRef.current.geometry.minCoordinates,
 					maxCoordinates:
-						currentShapeRef.current.geometry.maxCoordinates,
+						currentShapeBeingDrawnRef.current.geometry.maxCoordinates,
 				},
 			};
 			allCoordinates = [];
@@ -524,7 +524,7 @@ export function canvasContext(
 			},
 		};
 		addShapes(genericShape);
-		currentShapeRef.current = null;
+		currentShapeBeingDrawnRef.current = null;
 
 		if (roomId) {
 			// console.log('sending');
@@ -535,7 +535,7 @@ export function canvasContext(
 			ctx,
 			canvas,
 			allShapes.current,
-			currentShapeRef,
+			currentShapeBeingDrawnRef,
 			currSelectedShapeRef,
 			zoomRef.current,
 			offsetXRef.current,
@@ -560,12 +560,12 @@ export function canvasContext(
 		const worldY = (screenY - offsetYRef.current) / zoomRef.current;
 
 		if (currentTool === "rect") {
-			const x = Math.min(startX.current, worldX);
-			const y = Math.min(startY.current, worldY);
-			const width = Math.abs(worldX - startX.current);
-			const height = Math.abs(worldY - startY.current);
+			const x = Math.min(startXRef.current, worldX);
+			const y = Math.min(startYRef.current, worldY);
+			const width = Math.abs(worldX - startXRef.current);
+			const height = Math.abs(worldY - startYRef.current);
 
-			currentShapeRef.current = {
+			currentShapeBeingDrawnRef.current = {
 				position: {
 					x,
 					y,
@@ -577,12 +577,12 @@ export function canvasContext(
 				},
 			};
 		} else if (currentTool === "circle") {
-			const centerX = (startX.current + worldX) / 2;
-			const centerY = (startY.current + worldY) / 2;
+			const centerX = (startXRef.current + worldX) / 2;
+			const centerY = (startYRef.current + worldY) / 2;
 			const radX = Math.abs(centerX - worldX);
 			const radY = Math.abs(centerY - worldY);
 
-			currentShapeRef.current = {
+			currentShapeBeingDrawnRef.current = {
 				position: {
 					x: centerX,
 					y: centerY,
@@ -594,13 +594,13 @@ export function canvasContext(
 				},
 			};
 		} else if (currentTool == "line") {
-			const dX = worldX - startX.current;
-			const dY = worldY - startY.current;
+			const dX = worldX - startXRef.current;
+			const dY = worldY - startYRef.current;
 
-			currentShapeRef.current = {
+			currentShapeBeingDrawnRef.current = {
 				position: {
-					x: startX.current,
-					y: startY.current,
+					x: startXRef.current,
+					y: startYRef.current,
 				},
 				geometry: {
 					type: "line",
@@ -611,21 +611,21 @@ export function canvasContext(
 		} else if (currentTool == "draw") {
 			allCoordinates.push({ x: worldX, y: worldY });
 
-			currentShapeRef.current = {
+			currentShapeBeingDrawnRef.current = {
 				position: {
-					x: startX.current,
-					y: startY.current,
+					x: startXRef.current,
+					y: startYRef.current,
 				},
 				geometry: {
 					type: "draw",
 					allCoordinates,
 					minCoordinates: {
-						x: Math.min(startX.current, worldX),
-						y: Math.min(startY.current, worldY),
+						x: Math.min(startXRef.current, worldX),
+						y: Math.min(startYRef.current, worldY),
 					},
 					maxCoordinates: {
-						x: Math.max(startX.current, worldX),
-						y: Math.max(startX.current, worldY),
+						x: Math.max(startXRef.current, worldX),
+						y: Math.max(startXRef.current, worldY),
 					},
 				},
 			};
@@ -634,7 +634,7 @@ export function canvasContext(
 			ctx,
 			canvas,
 			allShapes.current,
-			currentShapeRef,
+			currentShapeBeingDrawnRef,
 			currSelectedShapeRef,
 			zoomRef.current,
 			offsetXRef.current,
@@ -642,8 +642,8 @@ export function canvasContext(
 		);
 		if (currentTool === "drag") {
 			const startMousePos = {
-				x: startX.current * zoomRef.current + offsetXRef.current,
-				y: startY.current * zoomRef.current + offsetYRef.current,
+				x: startXRef.current * zoomRef.current + offsetXRef.current,
+				y: startYRef.current * zoomRef.current + offsetYRef.current,
 			};
 
 			const currMousePos = {
@@ -651,10 +651,14 @@ export function canvasContext(
 				y: worldY * zoomRef.current + offsetYRef.current,
 			};
 
-			startX.current = worldX;
-			startY.current = worldY;
+			startXRef.current = worldX;
+			startYRef.current = worldY;
 
 			const diff = diffPoints(startMousePos, currMousePos);
+
+			if (Math.abs(diff.x) < 0.1) {
+				return;
+			}
 
 			requestAnimationFrame(() => {
 				const newTempOffset = addPoints(
@@ -727,8 +731,8 @@ export function canvasContext(
 // 		true,
 // 		setIsTextAreaActive,
 // 		setTextAreaPosition,
-// 		startX.current,
-// 		startY.current,
+// 		startXRef.current,
+// 		startYRef.current,
 // 	);
 // 	if (e.key == "Escape") {
 // 		document.removeEventListener("keydown", writeText);
@@ -740,8 +744,8 @@ export function canvasContext(
 // 	// 		geometry: shapeGeometryType;
 // 	// 	} = {
 // 	// 		position: {
-// 	// 			x: startX.current,
-// 	// 			y: startY.current,
+// 	// 			x: startXRef.current,
+// 	// 			y: startYRef.current,
 // 	// 		},
 // 	// 		geometry: {
 // 	// 			type: "text",
@@ -785,7 +789,7 @@ export function canvasContext(
 // 	// 		ctx,
 // 	// 		canvas,
 // 	// 		allShapes.current,
-// 	// 		currentShapeRef,
+// 	// 		currentShapeBeingDrawnRef,
 // 	// 		currSelectedShapeRef,
 // 	// 		zoomRef.current,
 // 	// 		offsetXRef.current,
@@ -793,6 +797,6 @@ export function canvasContext(
 // 	// 	);
 // 	// 	ctx.fillStyle = "white";
 // 	// 	text += e.key;
-// 	// 	ctx.fillText(`${text}`, startX.current, startY.current);
+// 	// 	ctx.fillText(`${text}`, startXRef.current, startYRef.current);
 // 	// }
 // };

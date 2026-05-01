@@ -1,6 +1,5 @@
 "use client"
-import { useEffect, useLayoutEffect, useRef } from "react";
-import { canvasContext } from "./canvasContext";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { currShapeBoundingBoxType, render } from "./drawCanvas";
 import { ShapeToolbar } from "./shapeToolbar";
 import { CanvasMenu } from "./canvasMenu";
@@ -10,6 +9,12 @@ import { useShallow } from "zustand/shallow";
 import { shapeGeometryType, shapesType } from "../../zustandState/storeTypes";
 import { toggleTextArea } from "../logic/toggleTextArea";
 import { nanoid } from "nanoid";
+import { CanvasEngine } from "../logic/canvasEngine";
+import {
+	EngineActionsArgumentType,
+	EngineRefsArgumentType,
+	EngineStateArgumentType,
+} from "../../types";
 
 export function Canvas({
 	slug,
@@ -63,13 +68,13 @@ export function Canvas({
 	);
 	let roomId: string | null = slug ? slug : null;
 
-	const startX = useRef<number>(0);
-	const startY = useRef<number>(0);
-	const shapesRef = useRef<shapesType[]>(allShapes);
+	const startXRef = useRef<number>(0);
+	const startYRef = useRef<number>(0);
+	const allShapesRef = useRef<shapesType[]>(allShapes);
 	const zoomRef = useRef(zoom);
 	const offsetXRef = useRef(offsetX);
 	const offsetYRef = useRef(offsetY);
-	const currentShapeRef = useRef<{
+	const currentShapeBeingDrawnRef = useRef<{
 		position: { x: number; y: number };
 		geometry: shapeGeometryType;
 	} | null>(null);
@@ -80,12 +85,9 @@ export function Canvas({
 	}>({ isActive: false, position: null });
 	const textAreaRef = useRef<HTMLTextAreaElement>(null);
 
-	// useEffect(() => {
-	// 	const textArea = textAreaRef.current;
-	// 	if (!textArea) return;
+	const canvasEngineRef = useRef<CanvasEngine>(null);
 
-	// 	textArea.focus();
-	// }, [isTextAreaActive]);
+	// const [engine, setEngine] = useState<CanvasEngine>();
 
 	useLayoutEffect(() => {
 		const textArea = textAreaRef.current;
@@ -96,7 +98,8 @@ export function Canvas({
 		}, 50);
 		textArea.selectionStart = textArea.value.length;
 		textArea.selectionEnd = textArea.value.length;
-
+		let maxWidth = canvasRef.current?.clientWidth! - textAreaScreenX - 20;
+		textArea.style.width = `${Math.min(textArea.scrollWidth, maxWidth)}px`;
 		return () => clearTimeout(focusTimeOut);
 	}, [isTextAreaActive]);
 
@@ -104,8 +107,17 @@ export function Canvas({
 		const textArea = textAreaRef.current;
 
 		if (textArea) {
-			// textArea.style.height = "50px";
+			let maxWidth =
+				canvasRef.current?.clientWidth! - textAreaScreenX - 20;
+			textArea.style.width = `${Math.min(textArea.scrollWidth, maxWidth)}px`;
 			textArea.style.height = `${textArea.scrollHeight}px`;
+			if (maxWidth <= textArea.scrollWidth) {
+				textArea.style.whiteSpace = "pre-wrap";
+				textArea.style.overflowWrap = "break-word";
+			} else {
+				textArea.style.whiteSpace = "pre";
+				textArea.style.wordBreak = "normal";
+			}
 		}
 	}, [textAreaValue]);
 
@@ -114,28 +126,42 @@ export function Canvas({
 			return;
 		}
 		const canvas = canvasRef.current;
-		const cleanUp = canvasContext(
-			canvas,
-			startX,
-			startY,
-			roomId,
-			socket,
-			currentTool,
-			setIsTextAreaActive,
-			setTextAreaPosition,
-			setTextAreaValue,
-			shapesRef,
-			addShapes,
+
+		const engineRefs: EngineRefsArgumentType = {
+			startXRef,
+			startYRef,
+			allShapesRef,
 			zoomRef,
 			offsetXRef,
 			offsetYRef,
-			changeZoom,
-			changeOffset,
-			currentShapeRef,
+			currentShapeBeingDrawnRef,
 			currSelectedShapeRef,
 			isTextAreaActiveRef,
+		};
+		const engineActions: EngineActionsArgumentType = {
+			addShapes,
+			setIsTextAreaActive,
+			setTextAreaPosition,
+			setTextAreaValue,
+			changeZoom,
+			changeOffset,
+		};
+		const engineState: EngineStateArgumentType = {
+			canvas,
+			roomId,
+			socket,
+			currentTool,
+		};
+
+		canvasEngineRef.current = new CanvasEngine(
+			engineState,
+			engineRefs,
+			engineActions,
 		);
-		return cleanUp;
+
+		return () => {
+			canvasEngineRef.current ? canvasEngineRef.current.destroy() : null;
+		};
 	}, [currentTool]);
 
 	useEffect(() => {
@@ -153,7 +179,7 @@ export function Canvas({
 			ctx,
 			canvas,
 			allShapes,
-			currentShapeRef,
+			currentShapeBeingDrawnRef,
 			currSelectedShapeRef,
 			zoom,
 			offsetX,
@@ -171,7 +197,7 @@ export function Canvas({
 	}, [offsetX, offsetY]);
 
 	useEffect(() => {
-		shapesRef.current = allShapes;
+		allShapesRef.current = allShapes;
 	}, [allShapes]);
 
 	useEffect(() => {
@@ -192,8 +218,8 @@ export function Canvas({
 			render(
 				ctx,
 				canvas,
-				shapesRef.current,
-				currentShapeRef,
+				allShapesRef.current,
+				currentShapeBeingDrawnRef,
 				currSelectedShapeRef,
 				zoomRef.current,
 				offsetXRef.current,
@@ -259,8 +285,8 @@ export function Canvas({
 		render(
 			ctx,
 			canvas,
-			shapesRef.current,
-			currentShapeRef,
+			allShapesRef.current,
+			currentShapeBeingDrawnRef,
 			currSelectedShapeRef,
 			zoomRef.current,
 			offsetXRef.current,
@@ -333,7 +359,7 @@ export function Canvas({
 				<textarea
 					id="text-area"
 					ref={textAreaRef}
-					className={`resize-none absolute min-h-12.5 whitespace-pre-wrap wrap-break-word bg-white/30 text-white border-none focus-within:border-none focus-visible:border-none active:border-none active:ring-0 active:outline-none focus-within:outline-none overflow-y-hidden tracking-widest`}
+					className={`resize-none absolute min-h-12.5 bg-white/30 text-white border-none focus-within:border-none focus-visible:border-none active:border-none active:ring-0 active:outline-none focus-within:outline-none tracking-widest overflow-hidden`}
 					value={textAreaValue}
 					onBlur={() => handleTextAreaSubmit()}
 					onChange={() => {
@@ -352,12 +378,12 @@ export function Canvas({
 					// 	}
 					// }}
 					autoCapitalize="none"
-					// wrap="off"
 					style={{
 						font: `16px cursive`,
 						left: `${textAreaScreenX}px`,
 						top: `${textAreaScreenY}px`,
-						width: `${canvasRef.current?.clientWidth! - textAreaScreenX - 15}px`,
+						minWidth: `50px`,
+						minHeight: "40px",
 					}}
 				/>
 			)}

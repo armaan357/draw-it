@@ -19,7 +19,7 @@ export const render = (
 	ctx: CanvasRenderingContext2D,
 	canvas: HTMLCanvasElement,
 	allShapes: shapesType[],
-	currentShapeRef: RefObject<{
+	currentShapeBeingDrawnRef: RefObject<{
 		position: {
 			x: number;
 			y: number;
@@ -53,13 +53,18 @@ export const render = (
 		offsetY * dpr,
 	);
 
-	drawCanvas(ctx, allShapes, currentShapeRef, currentSelectedShapeRef);
+	drawCanvas(
+		ctx,
+		allShapes,
+		currentShapeBeingDrawnRef,
+		currentSelectedShapeRef,
+	);
 };
 
 export function drawCanvas(
 	ctx: CanvasRenderingContext2D,
 	allShapes: shapesType[],
-	currentShapeRef: RefObject<{
+	currentShapeBeingDrawnRef: RefObject<{
 		position: {
 			x: number;
 			y: number;
@@ -134,8 +139,8 @@ export function drawCanvas(
 		drawBoundingBox(ctx, currentSelectedShapeRef.current);
 		return;
 	}
-	if (currentShapeRef.current) {
-		drawPreview(ctx, currentShapeRef);
+	if (currentShapeBeingDrawnRef.current) {
+		drawPreview(ctx, currentShapeBeingDrawnRef);
 	}
 }
 

@@ -3,7 +3,7 @@ import { shapeGeometryType } from "../../zustandState/storeTypes";
 
 export const drawPreview = (
 	ctx: CanvasRenderingContext2D,
-	currentShapeRef: RefObject<{
+	currentShapeBeingDrawnRef: RefObject<{
 		position: {
 			x: number;
 			y: number;
@@ -12,18 +12,18 @@ export const drawPreview = (
 	} | null>,
 ) => {
 	// ctx.strokeStyle = "white";
-	const currentShape = currentShapeRef.current!;
-	switch (currentShape.geometry.type) {
+	const currentShapeBeingDrawn = currentShapeBeingDrawnRef.current!;
+	switch (currentShapeBeingDrawn.geometry.type) {
 		case "rect":
 			ctx.beginPath();
 			ctx.roundRect(
-				currentShape.position.x,
-				currentShape.position.y,
-				currentShape.geometry.width,
-				currentShape.geometry.height,
+				currentShapeBeingDrawn.position.x,
+				currentShapeBeingDrawn.position.y,
+				currentShapeBeingDrawn.geometry.width,
+				currentShapeBeingDrawn.geometry.height,
 				Math.abs(
-					(currentShape.geometry.width +
-						currentShape.geometry.height) /
+					(currentShapeBeingDrawn.geometry.width +
+						currentShapeBeingDrawn.geometry.height) /
 						50,
 				),
 			);
@@ -32,10 +32,10 @@ export const drawPreview = (
 		case "circle":
 			ctx.beginPath();
 			ctx.ellipse(
-				currentShape.position.x,
-				currentShape.position.y,
-				currentShape.geometry.radX,
-				currentShape.geometry.radY,
+				currentShapeBeingDrawn.position.x,
+				currentShapeBeingDrawn.position.y,
+				currentShapeBeingDrawn.geometry.radX,
+				currentShapeBeingDrawn.geometry.radY,
 				0,
 				0,
 				2 * Math.PI,
@@ -45,18 +45,26 @@ export const drawPreview = (
 			break;
 		case "line":
 			ctx.beginPath();
-			ctx.moveTo(currentShape.position.x, currentShape.position.y);
+			ctx.moveTo(
+				currentShapeBeingDrawn.position.x,
+				currentShapeBeingDrawn.position.y,
+			);
 			ctx.lineTo(
-				currentShape.geometry.dX + currentShape.position.x,
-				currentShape.geometry.dY + currentShape.position.y,
+				currentShapeBeingDrawn.geometry.dX +
+					currentShapeBeingDrawn.position.x,
+				currentShapeBeingDrawn.geometry.dY +
+					currentShapeBeingDrawn.position.y,
 			);
 			ctx.stroke();
 			break;
 		case "draw":
 			ctx.lineJoin = "round";
 			ctx.beginPath();
-			ctx.moveTo(currentShape.position.x, currentShape.position.y);
-			currentShape.geometry.allCoordinates.forEach((a) =>
+			ctx.moveTo(
+				currentShapeBeingDrawn.position.x,
+				currentShapeBeingDrawn.position.y,
+			);
+			currentShapeBeingDrawn.geometry.allCoordinates.forEach((a) =>
 				ctx.lineTo(a.x, a.y),
 			);
 			ctx.stroke();
@@ -64,9 +72,9 @@ export const drawPreview = (
 		case "text":
 			ctx.fillStyle = "white";
 			ctx.fillText(
-				currentShape.geometry.text,
-				currentShape.position.x,
-				currentShape.position.y,
+				currentShapeBeingDrawn.geometry.text,
+				currentShapeBeingDrawn.position.x,
+				currentShapeBeingDrawn.position.y,
 			);
 			break;
 	}
