@@ -470,7 +470,6 @@ export class CanvasEngine {
 				x: this.refs.currSelectedShapeRef.current.position.x + diff.x,
 				y: this.refs.currSelectedShapeRef.current.position.y + diff.y,
 			};
-			// this.refs.currSelectedShapeRef.current.position = newStartPosition;
 			requestAnimationFrame(() => {
 				if (!this.refs.currSelectedShapeRef.current) {
 					return;
@@ -485,7 +484,72 @@ export class CanvasEngine {
 			this.editingShapeInfo.cursorPosition.position === "corner" &&
 			this.refs.currSelectedShapeRef.current
 		) {
-			if (this.editingShapeInfo.cursorPosition.cornerNumber === 3) {
+			if (this.editingShapeInfo.cursorPosition.cornerNumber === 0) {
+				console.log("inside the corner 0 if block");
+
+				const fixedX =
+					this.refs.currSelectedShapeRef.current.geometry.width +
+					this.refs.currSelectedShapeRef.current.position.x;
+				const fixedY =
+					this.refs.currSelectedShapeRef.current.geometry.height +
+					this.refs.currSelectedShapeRef.current.position.y;
+				if (this.editingShapeInfo.shapeType == null) {
+					return;
+				}
+
+				this.handleShapeResize(
+					this.editingShapeInfo.shapeType,
+					fixedX - worldX,
+					fixedY - worldY,
+					{ x: worldX, y: worldY },
+				);
+			} else if (
+				this.editingShapeInfo.cursorPosition.cornerNumber === 1
+			) {
+				console.log("inside the corner 1 if block");
+
+				const fixedX =
+					this.refs.currSelectedShapeRef.current.position.x;
+				const fixedY =
+					this.refs.currSelectedShapeRef.current.geometry.height +
+					this.refs.currSelectedShapeRef.current.position.y;
+				if (this.editingShapeInfo.shapeType == null) {
+					return;
+				}
+
+				this.handleShapeResize(
+					this.editingShapeInfo.shapeType,
+					worldX - fixedX,
+					fixedY - worldY,
+					{
+						x: this.refs.currSelectedShapeRef.current.position.x,
+						y: worldY,
+					},
+				);
+			} else if (
+				this.editingShapeInfo.cursorPosition.cornerNumber === 2
+			) {
+				console.log("inside the corner 2 if block");
+
+				const fixedX =
+					this.refs.currSelectedShapeRef.current.geometry.width +
+					this.refs.currSelectedShapeRef.current.position.x;
+				const fixedY =
+					this.refs.currSelectedShapeRef.current.position.y;
+				if (this.editingShapeInfo.shapeType == null) {
+					return;
+				}
+
+				this.handleShapeResize(
+					this.editingShapeInfo.shapeType,
+					fixedX - worldX,
+					worldY - fixedY,
+					{
+						x: worldX,
+						y: this.refs.currSelectedShapeRef.current.position.y,
+					},
+				);
+			} else {
 				console.log("inside the corner 3 if block");
 				const endXPos =
 					this.refs.currSelectedShapeRef.current.position.x +
@@ -502,126 +566,56 @@ export class CanvasEngine {
 					return;
 				}
 
-				const newGeometry: shapeGeometryType = {
-					type: "rect",
-					width:
-						this.refs.currSelectedShapeRef.current.geometry.width +
+				this.handleShapeResize(
+					this.editingShapeInfo.shapeType,
+					this.refs.currSelectedShapeRef.current.geometry.width +
 						diff.x,
-					height:
-						this.refs.currSelectedShapeRef.current.geometry.height +
+					this.refs.currSelectedShapeRef.current.geometry.height +
 						diff.y,
-				};
-				requestAnimationFrame(() => {
-					if (!this.refs.currSelectedShapeRef.current) {
-						return;
-					}
-					console.log("resizing shape");
-					this.actions.resizeShape(
-						this.refs.currSelectedShapeRef.current.id,
-						newGeometry,
-					);
-				});
-			} else if (
-				this.editingShapeInfo.cursorPosition.cornerNumber === 0
-			) {
-				console.log("inside the corner 0 if block");
-
-				const fixedX =
-					this.refs.currSelectedShapeRef.current.geometry.width +
-					this.refs.currSelectedShapeRef.current.position.x;
-				const fixedY =
-					this.refs.currSelectedShapeRef.current.geometry.height +
-					this.refs.currSelectedShapeRef.current.position.y;
-				if (this.editingShapeInfo.shapeType == null) {
-					return;
-				}
-
-				const newGeometry: shapeGeometryType = {
-					type: "rect",
-					width: fixedX - worldX,
-					height: fixedY - worldY,
-				};
-				requestAnimationFrame(() => {
-					if (!this.refs.currSelectedShapeRef.current) {
-						return;
-					}
-					console.log("resizing shape");
-					this.actions.resizeShape(
-						this.refs.currSelectedShapeRef.current.id,
-						newGeometry,
-						{ x: worldX, y: worldY },
-					);
-				});
-			} else if (
-				this.editingShapeInfo.cursorPosition.cornerNumber === 1
-			) {
-				console.log("inside the corner 1 if block");
-
-				const fixedX =
-					this.refs.currSelectedShapeRef.current.position.x;
-				const fixedY =
-					this.refs.currSelectedShapeRef.current.geometry.height +
-					this.refs.currSelectedShapeRef.current.position.y;
-				if (this.editingShapeInfo.shapeType == null) {
-					return;
-				}
-
-				const newGeometry: shapeGeometryType = {
-					type: "rect",
-					width: worldX - fixedX,
-					height: fixedY - worldY,
-				};
-				requestAnimationFrame(() => {
-					if (!this.refs.currSelectedShapeRef.current) {
-						return;
-					}
-					console.log("resizing shape");
-					this.actions.resizeShape(
-						this.refs.currSelectedShapeRef.current.id,
-						newGeometry,
-						{
-							x: this.refs.currSelectedShapeRef.current.position
-								.x,
-							y: worldY,
-						},
-					);
-				});
-			} else if (
-				this.editingShapeInfo.cursorPosition.cornerNumber === 2
-			) {
-				console.log("inside the corner 2 if block");
-
-				const fixedX =
-					this.refs.currSelectedShapeRef.current.geometry.width +
-					this.refs.currSelectedShapeRef.current.position.x;
-				const fixedY =
-					this.refs.currSelectedShapeRef.current.position.y;
-				if (this.editingShapeInfo.shapeType == null) {
-					return;
-				}
-
-				const newGeometry: shapeGeometryType = {
-					type: "rect",
-					width: fixedX - worldX,
-					height: worldY - fixedY,
-				};
-				requestAnimationFrame(() => {
-					if (!this.refs.currSelectedShapeRef.current) {
-						return;
-					}
-					console.log("resizing shape");
-					this.actions.resizeShape(
-						this.refs.currSelectedShapeRef.current.id,
-						newGeometry,
-						{
-							x: worldX,
-							y: this.refs.currSelectedShapeRef.current.position
-								.y,
-						},
-					);
-				});
+					this.refs.currSelectedShapeRef.current.position,
+				);
 			}
 		}
+	};
+
+	handleShapeResize = (
+		shapeType: "rect" | "circle" | "line" | "draw" | "text",
+		width: number,
+		height: number,
+		position: CoordinatesType,
+	) => {
+		let newGeometry: shapeGeometryType;
+		let newPosition: CoordinatesType;
+		if (shapeType === "rect") {
+			newGeometry = {
+				type: "rect",
+				width: width,
+				height: height,
+			};
+			newPosition = position;
+		} else if (shapeType === "circle") {
+			console.log("corner three of circle");
+			newGeometry = {
+				type: "circle",
+				radX: width / 2,
+				radY: height / 2,
+			};
+			newPosition = {
+				x: (position.x * 2 + width) / 2,
+				y: (position.y * 2 + height) / 2,
+			};
+		}
+		requestAnimationFrame(() => {
+			if (!this.refs.currSelectedShapeRef.current) {
+				return;
+			}
+			console.log("resizing shape");
+			this.actions.resizeShape(
+				this.refs.currSelectedShapeRef.current.id,
+				newGeometry,
+				newPosition,
+			);
+		});
 	};
 
 	handleZoom = (e: WheelEvent) => {
@@ -875,6 +869,15 @@ export class CanvasEngine {
 	};
 
 	findShapes = (e: MouseEvent) => {
+		if (this.refs.currSelectedShapeRef.current) {
+			const cursorPosition = this.detectBoundingBox(e);
+			if (cursorPosition.position !== "none") {
+				this.userAction = "edit";
+				this.editingShapeInfo.isMouseDown = true;
+				this.editingShapeInfo.cursorPosition = cursorPosition;
+				return;
+			}
+		}
 		console.log(`x coordinate = ${e.clientX}, y coordinate = ${e.clientY}`);
 		console.log("total shapes = ", this.refs.allShapesRef.current.length);
 		let i = this.refs.allShapesRef.current.length - 1;
