@@ -135,6 +135,12 @@ export function drawCanvas(
 				ctx.stroke();
 				break;
 			case "text":
+				if (
+					currentSelectedShapeRef.current &&
+					currentSelectedShapeRef.current.id === s.id
+				) {
+					break;
+				}
 				const textLineArray = s.geometry.text.split("\n");
 				// console.log(textLineArray);
 				let y = s.position.y;
