@@ -1,33 +1,32 @@
-import { RefObject } from "react";
-import {
-	allToolsType,
-	shapeGeometryType,
-	shapesType,
-} from "../../zustandState/storeTypes";
-import { currShapeBoundingBoxType, render } from "../components/drawCanvas";
-import { coordinatesType } from "../utils";
+import { render } from "../components/drawCanvas";
 import { toggleTextArea } from "./toggleTextArea";
 import { nanoid } from "nanoid";
 import sendShapes from "../components/sendShapes";
 import {
+	CoordinatesType,
+	DetectBoundingBoxFnType,
+	EditingShapeInfoType,
 	EngineActionsArgumentType,
 	EngineRefsArgumentType,
 	EngineStateArgumentType,
+	ShapeSpecificType,
 } from "../../types";
+import { shapeGeometryType } from "../../zustandState/storeTypes";
 
 export class CanvasEngine {
 	private state: EngineStateArgumentType;
 	private refs: EngineRefsArgumentType;
 	private actions: EngineActionsArgumentType;
 
-	private clicked: boolean;
+	private userAction: "edit" | "create" | "drag" | null;
 	private ctx: CanvasRenderingContext2D;
-	private screenCoordinates: coordinatesType | null;
+	private screenCoordinates: CoordinatesType | null;
 	private userName: string | null;
-	private allCoordinates: coordinatesType[];
+	private allCoordinates: CoordinatesType[];
+	private editingShapeInfo: EditingShapeInfoType;
 
-	//use these to prevent rAF stacking per-event during panning
-	private pendingPanDelta: coordinatesType;
+	//use these to prevent rAF from stacking per-event during panning
+	private pendingPanDelta: CoordinatesType;
 	private isPanningFrameScheduled: boolean;
 
 	constructor(
@@ -42,12 +41,18 @@ export class CanvasEngine {
 
 		this.initMouseHandlers();
 
-		this.clicked = false;
+		this.userAction = null;
 		this.allCoordinates = [];
 		this.userName = localStorage.getItem("userName");
 		this.screenCoordinates = null;
 		this.pendingPanDelta = { x: 0, y: 0 };
 		this.isPanningFrameScheduled = false;
+		this.editingShapeInfo = {
+			id: "",
+			shapeType: null,
+			isMouseDown: false,
+			cursorPosition: { position: "none" },
+		};
 	}
 
 	initMouseHandlers() {
@@ -63,24 +68,27 @@ export class CanvasEngine {
 	}
 
 	handleMouseDown = (e: MouseEvent) => {
-		if (this.state.currentTool == "cursor") {
-			this.findShapes(e);
-		} else if (this.state.currentTool === "drag") {
-			this.clicked = true;
+		if (this.state.currentTool === "drag") {
+			this.userAction = "drag";
 			this.screenCoordinates = {
 				x: e.clientX,
 				y: e.clientY,
 			};
+		}
+
+		this.refs.startXRef.current =
+			(e.clientX - this.refs.offsetXRef.current) /
+			this.refs.zoomRef.current;
+		this.refs.startYRef.current =
+			(e.clientY - this.refs.offsetYRef.current) /
+			this.refs.zoomRef.current;
+
+		if (this.state.currentTool == "cursor") {
+			this.findShapes(e);
 		} else {
 			// currSelectedShapeRef.current = null;
-			console.log("canvasContext() text mouse down called.");
-			this.clicked = true;
-			this.refs.startXRef.current =
-				(e.clientX - this.refs.offsetXRef.current) /
-				this.refs.zoomRef.current;
-			this.refs.startYRef.current =
-				(e.clientY - this.refs.offsetYRef.current) /
-				this.refs.zoomRef.current;
+			// console.log("canvasContext() text mouse down called.");
+			this.userAction = "create";
 			if (
 				this.state.currentTool == "text" &&
 				!this.refs.isTextAreaActiveRef.current.isActive
@@ -97,10 +105,29 @@ export class CanvasEngine {
 	};
 
 	handleMouseUp = (e: MouseEvent) => {
-		if (!this.clicked || this.state.currentTool == "cursor") {
+		if (this.userAction === null) {
+			return;
+		} else if (
+			this.userAction === "edit" ||
+			this.state.currentTool == "cursor"
+		) {
+			console.log(
+				"editing shape info in mouse up = ",
+				this.editingShapeInfo,
+			);
+			if (this.editingShapeInfo.isMouseDown) {
+				this.editingShapeInfo.isMouseDown = false;
+			}
+			return;
+		} else if (
+			this.userAction === "drag" &&
+			this.state.currentTool === "drag"
+		) {
+			this.userAction = null;
+			this.screenCoordinates = null;
 			return;
 		}
-		this.clicked = false;
+		this.userAction = null;
 		let shape:
 			| {
 					type: "rect";
@@ -127,7 +154,7 @@ export class CanvasEngine {
 					type: "draw";
 					x: number;
 					y: number;
-					allCoordinates: coordinatesType[];
+					allCoordinates: CoordinatesType[];
 			  }
 			| {
 					type: "text";
@@ -136,14 +163,8 @@ export class CanvasEngine {
 					text: string;
 			  }
 			| null = null;
-		interface shapeSpecificType {
-			position: {
-				x: number;
-				y: number;
-			};
-			geometry: shapeGeometryType;
-		}
-		let shapeSpecificProps: shapeSpecificType | null = null;
+
+		let shapeSpecificProps: ShapeSpecificType | null = null;
 		const rect = this.state.canvas.getBoundingClientRect();
 
 		const screenX = e.clientX - rect.left;
@@ -227,8 +248,6 @@ export class CanvasEngine {
 				},
 			};
 			this.allCoordinates = [];
-		} else if (this.state.currentTool === "drag") {
-			this.screenCoordinates = null;
 		}
 
 		if (!shapeSpecificProps) {
@@ -281,13 +300,40 @@ export class CanvasEngine {
 	};
 
 	handleMouseMove = (e: MouseEvent) => {
-		if (!this.clicked || this.state.currentTool === "cursor") {
+		if (this.userAction === null) {
 			return;
 		}
 
-		this.state.canvas.addEventListener("keydown", (e) => {
-			// console.log("key pressed = ", e.key);
-		});
+		if (this.userAction === "drag" && this.state.currentTool === "drag") {
+			const rect = this.state.canvas.getBoundingClientRect();
+			if (!this.screenCoordinates) {
+				return;
+			}
+			const startMousePos = {
+				x: this.screenCoordinates.x - rect.left,
+				y: this.screenCoordinates.y - rect.top,
+			};
+
+			const currMousePos = {
+				x: e.clientX - rect.left,
+				y: e.clientY - rect.top,
+			};
+
+			this.screenCoordinates = currMousePos;
+
+			const diff = this.diffPoints(startMousePos, currMousePos);
+
+			requestAnimationFrame(() => {
+				const newTempOffset = this.addPoints(
+					{
+						x: this.refs.offsetXRef.current,
+						y: this.refs.offsetYRef.current,
+					},
+					diff,
+				);
+				this.actions.changeOffset(newTempOffset.x, newTempOffset.y);
+			});
+		}
 
 		const rect = this.state.canvas.getBoundingClientRect();
 
@@ -299,6 +345,29 @@ export class CanvasEngine {
 		const worldY =
 			(screenY - this.refs.offsetYRef.current) /
 			this.refs.zoomRef.current;
+
+		if (this.userAction === "edit" || this.state.currentTool === "cursor") {
+			// console.log(
+			// 	"editing shape info in mouse move = ",
+			// 	this.editingShapeInfo,
+			// );
+			if (
+				this.refs.currSelectedShapeRef.current &&
+				!this.editingShapeInfo.isMouseDown
+			) {
+				//design a new fn which works like tldraw hover
+				this.detectBoundingBox(e);
+			} else if (
+				this.refs.currSelectedShapeRef.current &&
+				this.editingShapeInfo.isMouseDown
+			) {
+				this.handleShapeEdits(worldX, worldY);
+			}
+		}
+
+		if (this.userAction !== "create") {
+			return;
+		}
 
 		if (this.state.currentTool === "rect") {
 			const x = Math.min(this.refs.startXRef.current, worldX);
@@ -381,49 +450,186 @@ export class CanvasEngine {
 			this.refs.offsetXRef.current,
 			this.refs.offsetYRef.current,
 		);
-		if (this.state.currentTool === "drag") {
-			const rect = this.state.canvas.getBoundingClientRect();
-			if (!this.screenCoordinates) {
-				return;
-			}
-			const startMousePos = {
-				x: this.screenCoordinates.x - rect.left,
-				y: this.screenCoordinates.y - rect.top,
+	};
+
+	handleShapeEdits = (worldX: number, worldY: number) => {
+		console.log("handleShapeEdits called");
+		if (
+			this.editingShapeInfo.cursorPosition.position === "inside" &&
+			this.refs.currSelectedShapeRef.current
+		) {
+			console.log("inside the shape");
+			const diff = this.diffPoints(
+				{
+					x: this.refs.startXRef.current,
+					y: this.refs.startYRef.current,
+				},
+				{ x: worldX, y: worldY },
+			);
+			const newStartPosition = {
+				x: this.refs.currSelectedShapeRef.current.position.x + diff.x,
+				y: this.refs.currSelectedShapeRef.current.position.y + diff.y,
 			};
-
-			const currMousePos = {
-				x: e.clientX - rect.left,
-				y: e.clientY - rect.top,
-			};
-
-			this.screenCoordinates = currMousePos;
-
-			const diff = this.diffPoints(startMousePos, currMousePos);
-
-			// if (Math.abs(diff.x) < 0.1) {
-			// 	return;
-			// }
-
+			// this.refs.currSelectedShapeRef.current.position = newStartPosition;
 			requestAnimationFrame(() => {
-				const newTempOffset = this.addPoints(
-					{
-						x: this.refs.offsetXRef.current,
-						y: this.refs.offsetYRef.current,
-					},
-					diff,
+				if (!this.refs.currSelectedShapeRef.current) {
+					return;
+				}
+				console.log("repositioning shape");
+				this.actions.repositionShape(
+					this.refs.currSelectedShapeRef.current.id,
+					newStartPosition,
 				);
-				this.actions.changeOffset(newTempOffset.x, newTempOffset.y);
 			});
+		} else if (
+			this.editingShapeInfo.cursorPosition.position === "corner" &&
+			this.refs.currSelectedShapeRef.current
+		) {
+			if (this.editingShapeInfo.cursorPosition.cornerNumber === 3) {
+				console.log("inside the corner 3 if block");
+				const endXPos =
+					this.refs.currSelectedShapeRef.current.position.x +
+					this.refs.currSelectedShapeRef.current.geometry.width;
+				const endYPos =
+					this.refs.currSelectedShapeRef.current.position.y +
+					this.refs.currSelectedShapeRef.current.geometry.height;
+
+				const diff = this.diffPoints(
+					{ x: endXPos, y: endYPos },
+					{ x: worldX, y: worldY },
+				);
+				if (this.editingShapeInfo.shapeType == null) {
+					return;
+				}
+
+				const newGeometry: shapeGeometryType = {
+					type: "rect",
+					width:
+						this.refs.currSelectedShapeRef.current.geometry.width +
+						diff.x,
+					height:
+						this.refs.currSelectedShapeRef.current.geometry.height +
+						diff.y,
+				};
+				requestAnimationFrame(() => {
+					if (!this.refs.currSelectedShapeRef.current) {
+						return;
+					}
+					console.log("resizing shape");
+					this.actions.resizeShape(
+						this.refs.currSelectedShapeRef.current.id,
+						newGeometry,
+					);
+				});
+			} else if (
+				this.editingShapeInfo.cursorPosition.cornerNumber === 0
+			) {
+				console.log("inside the corner 0 if block");
+
+				const fixedX =
+					this.refs.currSelectedShapeRef.current.geometry.width +
+					this.refs.currSelectedShapeRef.current.position.x;
+				const fixedY =
+					this.refs.currSelectedShapeRef.current.geometry.height +
+					this.refs.currSelectedShapeRef.current.position.y;
+				if (this.editingShapeInfo.shapeType == null) {
+					return;
+				}
+
+				const newGeometry: shapeGeometryType = {
+					type: "rect",
+					width: fixedX - worldX,
+					height: fixedY - worldY,
+				};
+				requestAnimationFrame(() => {
+					if (!this.refs.currSelectedShapeRef.current) {
+						return;
+					}
+					console.log("resizing shape");
+					this.actions.resizeShape(
+						this.refs.currSelectedShapeRef.current.id,
+						newGeometry,
+						{ x: worldX, y: worldY },
+					);
+				});
+			} else if (
+				this.editingShapeInfo.cursorPosition.cornerNumber === 1
+			) {
+				console.log("inside the corner 1 if block");
+
+				const fixedX =
+					this.refs.currSelectedShapeRef.current.position.x;
+				const fixedY =
+					this.refs.currSelectedShapeRef.current.geometry.height +
+					this.refs.currSelectedShapeRef.current.position.y;
+				if (this.editingShapeInfo.shapeType == null) {
+					return;
+				}
+
+				const newGeometry: shapeGeometryType = {
+					type: "rect",
+					width: worldX - fixedX,
+					height: fixedY - worldY,
+				};
+				requestAnimationFrame(() => {
+					if (!this.refs.currSelectedShapeRef.current) {
+						return;
+					}
+					console.log("resizing shape");
+					this.actions.resizeShape(
+						this.refs.currSelectedShapeRef.current.id,
+						newGeometry,
+						{
+							x: this.refs.currSelectedShapeRef.current.position
+								.x,
+							y: worldY,
+						},
+					);
+				});
+			} else if (
+				this.editingShapeInfo.cursorPosition.cornerNumber === 2
+			) {
+				console.log("inside the corner 2 if block");
+
+				const fixedX =
+					this.refs.currSelectedShapeRef.current.geometry.width +
+					this.refs.currSelectedShapeRef.current.position.x;
+				const fixedY =
+					this.refs.currSelectedShapeRef.current.position.y;
+				if (this.editingShapeInfo.shapeType == null) {
+					return;
+				}
+
+				const newGeometry: shapeGeometryType = {
+					type: "rect",
+					width: fixedX - worldX,
+					height: worldY - fixedY,
+				};
+				requestAnimationFrame(() => {
+					if (!this.refs.currSelectedShapeRef.current) {
+						return;
+					}
+					console.log("resizing shape");
+					this.actions.resizeShape(
+						this.refs.currSelectedShapeRef.current.id,
+						newGeometry,
+						{
+							x: worldX,
+							y: this.refs.currSelectedShapeRef.current.position
+								.y,
+						},
+					);
+				});
+			}
 		}
 	};
 
-	handleWheel = (e: WheelEvent) => {
-		e.preventDefault();
+	handleZoom = (e: WheelEvent) => {
 		const zoom = this.refs.zoomRef.current;
 		const offsetX = this.refs.offsetXRef.current;
 		const offsetY = this.refs.offsetYRef.current;
 
-		const zoomIntensity = 0.001;
+		const zoomIntensity = 0.0065;
 		const zoomFactor = Math.exp(-e.deltaY * zoomIntensity);
 
 		const rect = this.state.canvas.getBoundingClientRect();
@@ -441,6 +647,50 @@ export class CanvasEngine {
 			this.actions.changeZoom(newZoom);
 			this.actions.changeOffset(newOffsetX, newOffsetY);
 		});
+	};
+
+	handleOffset = (e: WheelEvent) => {
+		const rect = this.state.canvas.getBoundingClientRect();
+		if (!this.screenCoordinates) {
+			return;
+		}
+		const startMousePos = {
+			x: this.screenCoordinates.x - rect.left,
+			y: this.screenCoordinates.y - rect.top,
+		};
+
+		const currMousePos = {
+			x: e.clientX - rect.left - e.deltaX,
+			y: e.clientY - rect.top - e.deltaY,
+		};
+
+		this.screenCoordinates = currMousePos;
+
+		const diff = this.diffPoints(startMousePos, currMousePos);
+
+		requestAnimationFrame(() => {
+			const newTempOffset = this.addPoints(
+				{
+					x: this.refs.offsetXRef.current,
+					y: this.refs.offsetYRef.current,
+				},
+				diff,
+			);
+			this.actions.changeOffset(newTempOffset.x, newTempOffset.y);
+		});
+	};
+
+	handleWheel = (e: WheelEvent) => {
+		e.preventDefault();
+		if (e.deltaX === -0 && !Number.isInteger(e.deltaY)) {
+			this.handleZoom(e);
+		} else {
+			this.screenCoordinates = {
+				x: e.clientX,
+				y: e.clientY,
+			};
+			this.handleOffset(e);
+		}
 	};
 
 	diffPoints = (
@@ -461,9 +711,9 @@ export class CanvasEngine {
 	};
 
 	projectPointOnLine = (
-		p: coordinatesType,
-		a: coordinatesType,
-		b: coordinatesType,
+		p: CoordinatesType,
+		a: CoordinatesType,
+		b: CoordinatesType,
 	) => {
 		// 1. Get vectors AP and AB
 		const ap = { x: p.x - a.x, y: p.y - a.y };
@@ -489,6 +739,141 @@ export class CanvasEngine {
 		};
 	};
 
+	detectBoundingBox = (e: MouseEvent): DetectBoundingBoxFnType => {
+		if (!this.refs.currSelectedShapeRef.current) {
+			return { position: "none" };
+		}
+		const rect = this.state.canvas.getBoundingClientRect();
+
+		const screenX = e.clientX - rect.left;
+		const screenY = e.clientY - rect.top;
+		const worldX =
+			(screenX - this.refs.offsetXRef.current) /
+			this.refs.zoomRef.current;
+		const worldY =
+			(screenY - this.refs.offsetYRef.current) /
+			this.refs.zoomRef.current;
+
+		const startXPos = this.refs.currSelectedShapeRef.current.position.x;
+		const endXPos =
+			this.refs.currSelectedShapeRef.current.geometry.width! +
+			this.refs.currSelectedShapeRef.current.position.x;
+
+		const startYPos = this.refs.currSelectedShapeRef.current.position.y;
+		const endYPos =
+			this.refs.currSelectedShapeRef.current.geometry.height! +
+			this.refs.currSelectedShapeRef.current.position.y;
+
+		const { isInsideCorner, cornerIndex } = this.detectBoundingBoxCorners(
+			worldX,
+			worldY,
+			this.refs.currSelectedShapeRef.current.allCorners,
+		);
+
+		if (isInsideCorner) {
+			console.log("cursor is inside corner");
+			console.log("corner index = ", cornerIndex);
+			this.state.canvas.style.cursor =
+				cornerIndex === 0 || cornerIndex === 3
+					? "nwse-resize"
+					: "nesw-resize";
+			return { position: "corner", cornerNumber: cornerIndex };
+		} else {
+			const isCursorInside = this.detectRectangles(
+				worldX,
+				worldY,
+				startXPos,
+				endXPos,
+				startYPos,
+				endYPos,
+			);
+
+			if (isCursorInside) {
+				console.log("Inside the bounding box");
+				this.state.canvas.style.cursor = "move";
+				return { position: "inside" };
+			} else {
+				this.state.canvas.style.cursor = "default";
+			}
+		}
+		return { position: "none" };
+	};
+
+	detectRectangles = (
+		worldX: number,
+		worldY: number,
+		startXPos: number,
+		endXPos: number,
+		startYPos: number,
+		endYPos: number,
+	) => {
+		const isInXAxis = worldX >= startXPos && worldX <= endXPos;
+		const isInYAxis = worldY >= startYPos && worldY <= endYPos;
+		return isInXAxis && isInYAxis;
+	};
+
+	calcBoundingBoxCorners = (
+		startXPos: number,
+		endXPos: number,
+		startYPos: number,
+		endYPos: number,
+	) => {
+		return [
+			{
+				startXPos: startXPos - 8,
+				endXPos: startXPos + 8,
+				startYPos: startYPos - 8,
+				endYPos: startYPos + 8,
+			},
+			{
+				startXPos: endXPos - 8,
+				endXPos: endXPos + 8,
+				startYPos: startYPos - 8,
+				endYPos: startYPos + 8,
+			},
+			{
+				startXPos: startXPos - 8,
+				endXPos: startXPos + 8,
+				startYPos: endYPos - 8,
+				endYPos: endYPos + 8,
+			},
+			{
+				startXPos: endXPos - 8,
+				endXPos: endXPos + 8,
+				startYPos: endYPos - 8,
+				endYPos: endYPos + 8,
+			},
+		];
+	};
+
+	detectBoundingBoxCorners = (
+		worldX: number,
+		worldY: number,
+		allCorners: {
+			startXPos: number;
+			endXPos: number;
+			startYPos: number;
+			endYPos: number;
+		}[],
+	) => {
+		let isInsideCorner: boolean = false;
+		let i = 0;
+		for (; i < allCorners.length; i++) {
+			const isInsideCorner = this.detectRectangles(
+				worldX,
+				worldY,
+				allCorners[i]?.startXPos!,
+				allCorners[i]?.endXPos!,
+				allCorners[i]?.startYPos!,
+				allCorners[i]?.endYPos!,
+			);
+			if (isInsideCorner) {
+				return { isInsideCorner, cornerIndex: i };
+			}
+		}
+		return { isInsideCorner, cornerIndex: i };
+	};
+
 	findShapes = (e: MouseEvent) => {
 		console.log(`x coordinate = ${e.clientX}, y coordinate = ${e.clientY}`);
 		console.log("total shapes = ", this.refs.allShapesRef.current.length);
@@ -510,18 +895,30 @@ export class CanvasEngine {
 				continue;
 			}
 			if (tempShape.geometry.type === "rect") {
-				const isInXAxis =
-					worldX >= tempShape.position.x! &&
-					worldX <= tempShape.geometry.width! + tempShape.position.x;
-				const isInYAxis =
-					worldY >= tempShape.position.y! &&
-					worldY <= tempShape.geometry.height! + tempShape.position.y;
-				console.log(
-					`isInXAxis = ${isInXAxis}, isInYAxis = ${isInYAxis}\nx = ${tempShape.position.x}, y = ${tempShape.position.y} and  endX = ${tempShape.geometry.width! + tempShape.position.x}, endY = ${tempShape.geometry.height! + tempShape.position.y}`,
+				const startXPos = tempShape.position.x;
+				const endXPos =
+					tempShape.geometry.width! + tempShape.position.x;
+
+				const startYPos = tempShape.position.y;
+				const endYPos =
+					tempShape.geometry.height! + tempShape.position.y;
+
+				const isCursorInside = this.detectRectangles(
+					worldX,
+					worldY,
+					startXPos,
+					endXPos,
+					startYPos,
+					endYPos,
 				);
-				if (isInXAxis && isInYAxis) {
-					console.log(tempShape.id);
-					console.log(tempShape);
+
+				if (isCursorInside) {
+					const allCorners = this.calcBoundingBoxCorners(
+						startXPos,
+						endXPos,
+						startYPos,
+						endYPos,
+					);
 					this.refs.currSelectedShapeRef.current = {
 						id: tempShape.id,
 						position: tempShape.position,
@@ -530,18 +927,9 @@ export class CanvasEngine {
 							width: tempShape.geometry.width,
 							height: tempShape.geometry.height,
 						},
+						allCorners: allCorners,
 					};
-					render(
-						this.ctx,
-						this.state.canvas,
-						this.refs.allShapesRef.current,
-						this.refs.currentShapeBeingDrawnRef,
-						this.refs.currSelectedShapeRef,
-						this.refs.zoomRef.current,
-						this.refs.offsetXRef.current,
-						this.refs.offsetYRef.current,
-					);
-					return;
+					break;
 				}
 			} else if (tempShape.geometry.type === "circle") {
 				//after implementing the rotation feature, the points x and y will need to be rotated by the angle of rotation in the opposite direction and then use them for calulation
@@ -563,6 +951,16 @@ export class CanvasEngine {
 						(worldY - tempShape.position.y)) /
 					(semiMinorAxis * semiMinorAxis);
 				if (isInXAxis + isInYAxis < 1) {
+					const allCorners = this.calcBoundingBoxCorners(
+						tempShape.position.x - tempShape.geometry.radX,
+						tempShape.position.x -
+							tempShape.geometry.radX +
+							tempShape.geometry.radX * 2,
+						tempShape.position.y - tempShape.geometry.radY,
+						tempShape.position.y -
+							tempShape.geometry.radY +
+							tempShape.geometry.radY * 2,
+					);
 					console.log(tempShape.id);
 					console.log(tempShape);
 					this.refs.currSelectedShapeRef.current = {
@@ -576,18 +974,9 @@ export class CanvasEngine {
 							width: tempShape.geometry.radX * 2,
 							height: tempShape.geometry.radY * 2,
 						},
+						allCorners,
 					};
-					render(
-						this.ctx,
-						this.state.canvas,
-						this.refs.allShapesRef.current,
-						this.refs.currentShapeBeingDrawnRef,
-						this.refs.currSelectedShapeRef,
-						this.refs.zoomRef.current,
-						this.refs.offsetXRef.current,
-						this.refs.offsetYRef.current,
-					);
-					return;
+					break;
 				}
 			} else if (tempShape.geometry.type === "line") {
 				const x1 = tempShape.position.x;
@@ -609,6 +998,32 @@ export class CanvasEngine {
 				if (distanceToPoint < 7) {
 					console.log(tempShape.id);
 					console.log(tempShape);
+					const allCorners = [
+						{
+							startXPos: tempShape.position.x - 8,
+							endXPos: tempShape.position.x + 8,
+							startYPos: tempShape.position.y - 8,
+							endYPos: tempShape.position.y + 8,
+						},
+						{
+							startXPos:
+								tempShape.position.x +
+								tempShape.geometry.dX -
+								8,
+							endXPos:
+								tempShape.position.x +
+								tempShape.geometry.dX +
+								8,
+							startYPos:
+								tempShape.position.y +
+								tempShape.geometry.dY -
+								8,
+							endYPos:
+								tempShape.position.y +
+								tempShape.geometry.dY +
+								8,
+						},
+					];
 					this.refs.currSelectedShapeRef.current = {
 						id: tempShape.id,
 						position: tempShape.position,
@@ -617,25 +1032,16 @@ export class CanvasEngine {
 							width: tempShape.geometry.dX,
 							height: tempShape.geometry.dY,
 						},
+						allCorners,
 					};
-					render(
-						this.ctx,
-						this.state.canvas,
-						this.refs.allShapesRef.current,
-						this.refs.currentShapeBeingDrawnRef,
-						this.refs.currSelectedShapeRef,
-						this.refs.zoomRef.current,
-						this.refs.offsetXRef.current,
-						this.refs.offsetYRef.current,
-					);
-					return;
+					break;
 				}
 			}
 			// else if(tempShape.geometry.type === "draw") {
 			// 	let x1 = tempShape.position.x;
 			// 	let y1 = tempShape.position.y;
 			// 	for (let j = 0; j < tempShape.geometry.allCoordinates.length; j++) {
-			// 	if(!tempShape.geometry.allCoordinates[j]) return;
+			// 	if(!tempShape.geometry.allCoordinates[j]) break;
 			// 	if(j !== 0) {
 			// 		x1 = tempShape.geometry.allCoordinates[j-1]?.x!;
 			// 		y1 = tempShape.geometry.allCoordinates[j-1]?.y!;
@@ -665,17 +1071,7 @@ export class CanvasEngine {
 			// 				height: tempShape.geometry.maxCoordinates.y - tempShape.geometry.minCoordinates.y,
 			// 			},
 			// 		};
-			// render(
-			//     this.ctx,
-			//     this.state.canvas,
-			//     this.refs.allShapesRef.current,
-			//     this.refs.currentShapeBeingDrawnRef,
-			//     this.refs.currSelectedShapeRef,
-			//     this.refs.zoomRef.current,
-			//     this.refs.offsetXRef.current,
-			//     this.refs.offsetYRef.current,
-			// );
-			// 		return;
+			// 		break;
 			// 	}
 			// }
 			// }
@@ -691,6 +1087,12 @@ export class CanvasEngine {
 					worldY <=
 						tempShape.geometry.height + (tempShape.position.y - 4);
 				if (isInXAxis && isInYAxis) {
+					const allCorners = this.calcBoundingBoxCorners(
+						tempShape.position.x - 6,
+						tempShape.position.x + tempShape.geometry.width + 6,
+						tempShape.position.y - 4,
+						tempShape.position.y + tempShape.geometry.height - 4,
+					);
 					console.log(tempShape.id);
 					console.log(tempShape);
 					this.refs.currSelectedShapeRef.current = {
@@ -704,17 +1106,8 @@ export class CanvasEngine {
 							width: tempShape.geometry.width + 12,
 							height: tempShape.geometry.height,
 						},
+						allCorners,
 					};
-					render(
-						this.ctx,
-						this.state.canvas,
-						this.refs.allShapesRef.current,
-						this.refs.currentShapeBeingDrawnRef,
-						this.refs.currSelectedShapeRef,
-						this.refs.zoomRef.current,
-						this.refs.offsetXRef.current,
-						this.refs.offsetYRef.current,
-					);
 					this.actions.setTextAreaValue(tempShape.geometry.text);
 					toggleTextArea(
 						true,
@@ -723,21 +1116,57 @@ export class CanvasEngine {
 						tempShape.position.x,
 						tempShape.position.y,
 					);
-					return;
+					break;
 				}
 			} else {
 				this.refs.currSelectedShapeRef.current = null;
-				render(
-					this.ctx,
-					this.state.canvas,
-					this.refs.allShapesRef.current,
-					this.refs.currentShapeBeingDrawnRef,
-					this.refs.currSelectedShapeRef,
-					this.refs.zoomRef.current,
-					this.refs.offsetXRef.current,
-					this.refs.offsetYRef.current,
-				);
+				this.userAction = null;
+				// break;
 			}
+		}
+		render(
+			this.ctx,
+			this.state.canvas,
+			this.refs.allShapesRef.current,
+			this.refs.currentShapeBeingDrawnRef,
+			this.refs.currSelectedShapeRef,
+			this.refs.zoomRef.current,
+			this.refs.offsetXRef.current,
+			this.refs.offsetYRef.current,
+		);
+		if (this.refs.currSelectedShapeRef.current) {
+			const cursorPosition = this.detectBoundingBox(e);
+			let position: DetectBoundingBoxFnType = { position: "none" };
+			// if (!cursorPosition) {
+			// 	return;
+			// } else {
+			if (cursorPosition.position === "corner") {
+				position = {
+					position: cursorPosition.position,
+					cornerNumber: cursorPosition.cornerNumber,
+				};
+			} else if (cursorPosition.position === "edge") {
+				position = {
+					position: cursorPosition.position,
+					edgeNumber: cursorPosition.edgeNumber,
+				};
+			} else {
+				position = {
+					position: cursorPosition.position,
+				};
+			}
+			this.userAction = "edit";
+			// }
+			this.editingShapeInfo = {
+				id: this.refs.currSelectedShapeRef.current.id,
+				shapeType: this.refs.currSelectedShapeRef.current.geometry.type,
+				cursorPosition: position,
+				isMouseDown: true,
+			};
+			console.log(
+				"editing shape info after findShapes = ",
+				this.editingShapeInfo,
+			);
 		}
 	};
 

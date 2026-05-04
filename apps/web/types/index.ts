@@ -14,24 +14,31 @@ export type EngineRefsArgumentType = {
 	offsetXRef: RefObject<number>;
 	offsetYRef: RefObject<number>;
 	currentShapeBeingDrawnRef: RefObject<{
-		position: {
-			x: number;
-			y: number;
-		};
+		position: CoordinatesType;
 		geometry: shapeGeometryType;
 	} | null>;
 	currSelectedShapeRef: RefObject<currShapeBoundingBoxType | null>;
 	isTextAreaActiveRef: RefObject<{
 		isActive: boolean;
-		position: {
-			x: number;
-			y: number;
-		} | null;
+		position: CoordinatesType | null;
 	}>;
 };
 
 export type EngineActionsArgumentType = {
 	addShapes: (newShape: shapesType) => void;
+	removeShape: (id: string) => void;
+	repositionShape: (
+		id: string,
+		position: {
+			x: number;
+			y: number;
+		},
+	) => void;
+	resizeShape: (
+		id: string,
+		geometry: shapeGeometryType,
+		position?: CoordinatesType,
+	) => void;
 	setIsTextAreaActive: (toggle: boolean) => void;
 	setTextAreaPosition: (worldX: number, worldY: number) => void;
 	setTextAreaValue: (val: string) => void;
@@ -45,3 +52,36 @@ export type EngineStateArgumentType = {
 	socket: WebSocket | undefined;
 	currentTool: allToolsType;
 };
+
+export type ShapeSpecificType = {
+	position: CoordinatesType;
+	geometry: shapeGeometryType;
+};
+
+export type CoordinatesType = {
+	x: number;
+	y: number;
+};
+
+export type EditingShapeInfoType = {
+	id: string;
+	shapeType: "rect" | "circle" | "text" | "line" | "draw" | null;
+	cursorPosition: DetectBoundingBoxFnType;
+	isMouseDown: boolean;
+};
+
+export type DetectBoundingBoxFnType =
+	| {
+			position: "inside";
+	  }
+	| {
+			position: "edge";
+			edgeNumber: number;
+	  }
+	| {
+			position: "corner";
+			cornerNumber: number;
+	  }
+	| {
+			position: "none";
+	  };

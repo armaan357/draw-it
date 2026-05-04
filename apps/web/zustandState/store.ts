@@ -77,7 +77,7 @@ const currentShapesSlice: StateCreator<
 			tempShapes[index] = { ...oldShape, position: position };
 			return { allShapes: tempShapes };
 		}),
-	resizeShape: (id, geometry) =>
+	resizeShape: (id, geometry, position) =>
 		set((state) => {
 			const index = state.allShapes.findIndex((s) => s.id === id);
 			if (index == -1) return state;
@@ -86,7 +86,11 @@ const currentShapesSlice: StateCreator<
 				return state;
 			}
 			const oldShape = tempShapes[index];
-			tempShapes[index] = { ...oldShape, geometry: geometry };
+			tempShapes[index] = {
+				...oldShape,
+				geometry: geometry,
+				position: position ? position : oldShape.position,
+			};
 			return { allShapes: tempShapes };
 		}),
 	undo: () =>

@@ -1,3 +1,5 @@
+import { CoordinatesType } from "../types";
+
 export type shapeGeometryType =
 	| {
 			type: "rect";
@@ -16,9 +18,9 @@ export type shapeGeometryType =
 	  }
 	| {
 			type: "draw";
-			allCoordinates: { x: number; y: number }[];
-			minCoordinates: { x: number; y: number };
-			maxCoordinates: { x: number; y: number };
+			allCoordinates: CoordinatesType[];
+			minCoordinates: CoordinatesType;
+			maxCoordinates: CoordinatesType;
 	  }
 	| {
 			type: "text";
@@ -31,10 +33,7 @@ export type shapeGeometryType =
 export type shapesType = {
 	id: string;
 	zIndex?: number;
-	position: {
-		x: number;
-		y: number;
-	};
+	position: CoordinatesType;
 	geometry: shapeGeometryType;
 	style: {
 		fill: boolean;
@@ -60,7 +59,11 @@ export interface currentShapesStateType {
 	future: shapesType[][];
 	addShapes: (newShape: shapesType) => void;
 	removeShape: (id: string) => void;
-	resizeShape: (id: string, geometry: shapeGeometryType) => void;
+	resizeShape: (
+		id: string,
+		geometry: shapeGeometryType,
+		position?: CoordinatesType,
+	) => void;
 	repositionShape: (id: string, position: { x: number; y: number }) => void;
 	undo: () => void;
 	redo: () => void;

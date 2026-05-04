@@ -1,730 +1,720 @@
-import { RefObject } from "react";
-import { coordinatesType } from "../utils";
-import sendShapes from "./sendShapes";
-import { currShapeBoundingBoxType, drawCanvas, render } from "./drawCanvas";
-import {
-	allToolsType,
-	shapeGeometryType,
-	shapesType,
-} from "../../zustandState/storeTypes";
-import { nanoid } from "nanoid";
-import { toggleTextArea } from "../logic/toggleTextArea";
+// import { RefObject } from "react";
+// import sendShapes from "./sendShapes";
+// import { currShapeBoundingBoxType, render } from "./drawCanvas";
+// import {
+// 	allToolsType,
+// 	shapeGeometryType,
+// 	shapesType,
+// } from "../../zustandState/storeTypes";
+// import { nanoid } from "nanoid";
+// import { toggleTextArea } from "../logic/toggleTextArea";
+// import { CoordinatesType } from "../../types";
 
-//remove all the draw function calls after fixing everything
-export function canvasContext(
-	canvas: HTMLCanvasElement,
-	startXRef: RefObject<number>,
-	startYRef: RefObject<number>,
-	roomId: string | null,
-	socket: WebSocket | undefined,
-	currentTool: allToolsType,
-	allShapes: RefObject<shapesType[]>,
-	addShapes: (newShape: shapesType) => void,
-	setIsTextAreaActive: (toggle: boolean) => void,
-	setTextAreaPosition: (worldX: number, worldY: number) => void,
-	setTextAreaValue: (value: string) => void,
-	zoomRef: RefObject<number>,
-	offsetXRef: RefObject<number>,
-	offsetYRef: RefObject<number>,
-	changeZoom: (newZoom: number) => void,
-	changeOffset: (newOffsetX: number, newOffsetY: number) => void,
-	currentShapeBeingDrawnRef: RefObject<{
-		position: {
-			x: number;
-			y: number;
-		};
-		geometry: shapeGeometryType;
-	} | null>,
-	currSelectedShapeRef: RefObject<currShapeBoundingBoxType | null>,
-	isTextAreaActiveRef: RefObject<{
-		isActive: boolean;
-		position: { x: number; y: number } | null;
-	}>,
-) {
-	const ctx = canvas.getContext("2d");
-	const userName: string | null = localStorage.getItem("userName")
-		? localStorage.getItem("token")
-		: null;
+// //remove all the draw function calls after fixing everything
+// export function canvasContext(
+// 	canvas: HTMLCanvasElement,
+// 	startXRef: RefObject<number>,
+// 	startYRef: RefObject<number>,
+// 	roomId: string | null,
+// 	socket: WebSocket | undefined,
+// 	currentTool: allToolsType,
+// 	allShapes: RefObject<shapesType[]>,
+// 	addShapes: (newShape: shapesType) => void,
+// 	setIsTextAreaActive: (toggle: boolean) => void,
+// 	setTextAreaPosition: (worldX: number, worldY: number) => void,
+// 	setTextAreaValue: (value: string) => void,
+// 	zoomRef: RefObject<number>,
+// 	offsetXRef: RefObject<number>,
+// 	offsetYRef: RefObject<number>,
+// 	changeZoom: (newZoom: number) => void,
+// 	changeOffset: (newOffsetX: number, newOffsetY: number) => void,
+// 	currentShapeBeingDrawnRef: RefObject<{
+// 		position: {
+// 			x: number;
+// 			y: number;
+// 		};
+// 		geometry: shapeGeometryType;
+// 	} | null>,
+// 	currSelectedShapeRef: RefObject<currShapeBoundingBoxType | null>,
+// 	isTextAreaActiveRef: RefObject<{
+// 		isActive: boolean;
+// 		position: { x: number; y: number } | null;
+// 	}>,
+// ) {
+// 	const ctx = canvas.getContext("2d");
+// 	const userName: string | null = localStorage.getItem("userName")
+// 		? localStorage.getItem("token")
+// 		: null;
 
-	if (!ctx) {
-		return;
-	}
+// 	if (!ctx) {
+// 		return;
+// 	}
 
-	ctx.strokeStyle = "white";
-	ctx.lineWidth = 1.5;
-	ctx.letterSpacing = "2px";
-	ctx.fontKerning = "normal";
-	ctx.font = "16px cursive";
-	let clicked = false;
-	// drawCanvas(ctx, allShapes);
-	render(
-		ctx,
-		canvas,
-		allShapes.current,
-		currentShapeBeingDrawnRef,
-		currSelectedShapeRef,
-		zoomRef.current,
-		offsetXRef.current,
-		offsetYRef.current,
-	);
-	console.log(
-		`In canvas context => clicked = ${clicked} & currentTool = ${currentTool}`,
-	);
+// 	let clicked = false;
 
-	let allCoordinates: coordinatesType[] = [];
-	let text: string = "";
+// 	console.log(
+// 		`In canvas context => clicked = ${clicked} & currentTool = ${currentTool}`,
+// 	);
 
-	function projectPointOnLine(
-		p: coordinatesType,
-		a: coordinatesType,
-		b: coordinatesType,
-	) {
-		// 1. Get vectors AP and AB
-		const ap = { x: p.x - a.x, y: p.y - a.y };
-		const ab = { x: b.x - a.x, y: b.y - a.y };
+// 	let allCoordinates: CoordinatesType[] = [];
+// 	let text: string = "";
 
-		// 2. Calculate the squared length of AB
-		const ab2 = ab.x * ab.x + ab.y * ab.y;
+// 	function projectPointOnLine(
+// 		p: CoordinatesType,
+// 		a: CoordinatesType,
+// 		b: CoordinatesType,
+// 	) {
+// 		// 1. Get vectors AP and AB
+// 		const ap = { x: p.x - a.x, y: p.y - a.y };
+// 		const ab = { x: b.x - a.x, y: b.y - a.y };
 
-		// Safety check for zero-length line
-		if (ab2 === 0) return { x: a.x, y: a.y };
+// 		// 2. Calculate the squared length of AB
+// 		const ab2 = ab.x * ab.x + ab.y * ab.y;
 
-		// 3. Calculate dot product of AP and AB
-		const ap_dot_ab = ap.x * ab.x + ap.y * ab.y;
+// 		// Safety check for zero-length line
+// 		if (ab2 === 0) return { x: a.x, y: a.y };
 
-		// 4. Calculate the projection ratio 't'
-		// t is the distance along the line from A to the projection point
-		const t = ap_dot_ab / ab2;
+// 		// 3. Calculate dot product of AP and AB
+// 		const ap_dot_ab = ap.x * ab.x + ap.y * ab.y;
 
-		// 5. Return the point on the line at distance t
-		return {
-			x: a.x + t * ab.x,
-			y: a.y + t * ab.y,
-		};
-	}
+// 		// 4. Calculate the projection ratio 't'
+// 		// t is the distance along the line from A to the projection point
+// 		const t = ap_dot_ab / ab2;
 
-	const findShapes = (e: MouseEvent) => {
-		console.log(`x coordinate = ${e.clientX}, y coordinate = ${e.clientY}`);
-		console.log("total shapes = ", allShapes.current.length);
-		let i = allShapes.current.length - 1;
+// 		// 5. Return the point on the line at distance t
+// 		return {
+// 			x: a.x + t * ab.x,
+// 			y: a.y + t * ab.y,
+// 		};
+// 	}
 
-		for (; i >= 0; i--) {
-			const tempShape = allShapes.current[i];
-			const rect = canvas.getBoundingClientRect();
+// 	const findShapes = (e: MouseEvent) => {
+// 		console.log(`x coordinate = ${e.clientX}, y coordinate = ${e.clientY}`);
+// 		console.log("total shapes = ", allShapes.current.length);
+// 		let i = allShapes.current.length - 1;
 
-			const screenX = e.clientX - rect.left;
-			const screenY = e.clientY - rect.top;
-			const worldX = (screenX - offsetXRef.current) / zoomRef.current;
-			const worldY = (screenY - offsetYRef.current) / zoomRef.current;
-			if (!tempShape) {
-				continue;
-			}
-			if (tempShape.geometry.type === "rect") {
-				const isInXAxis =
-					worldX >= tempShape.position.x! &&
-					worldX <= tempShape.geometry.width! + tempShape.position.x;
-				const isInYAxis =
-					worldY >= tempShape.position.y! &&
-					worldY <= tempShape.geometry.height! + tempShape.position.y;
-				console.log(
-					`isInXAxis = ${isInXAxis}, isInYAxis = ${isInYAxis}\nx = ${tempShape.position.x}, y = ${tempShape.position.y} and  endX = ${tempShape.geometry.width! + tempShape.position.x}, endY = ${tempShape.geometry.height! + tempShape.position.y}`,
-				);
-				if (isInXAxis && isInYAxis) {
-					console.log(tempShape.id);
-					console.log(tempShape);
-					currSelectedShapeRef.current = {
-						id: tempShape.id,
-						position: tempShape.position,
-						geometry: {
-							type: "rect",
-							width: tempShape.geometry.width,
-							height: tempShape.geometry.height,
-						},
-					};
-					render(
-						ctx,
-						canvas,
-						allShapes.current,
-						currentShapeBeingDrawnRef,
-						currSelectedShapeRef,
-						zoomRef.current,
-						offsetXRef.current,
-						offsetYRef.current,
-					);
-					return;
-				}
-			} else if (tempShape.geometry.type === "circle") {
-				//after implementing the rotation feature, the points x and y will need to be rotated by the angle of rotation in the opposite direction and then use them for calulation
-				const semiMajorAxis =
-					tempShape.geometry.radX >= tempShape.geometry.radY
-						? tempShape.geometry.radX
-						: tempShape.geometry.radY;
-				const semiMinorAxis =
-					tempShape.geometry.radX <= tempShape.geometry.radY
-						? tempShape.geometry.radX
-						: tempShape.geometry.radY;
+// 		for (; i >= 0; i--) {
+// 			const tempShape = allShapes.current[i];
+// 			const rect = canvas.getBoundingClientRect();
 
-				const isInXAxis =
-					((worldX - tempShape.position.x) *
-						(worldX - tempShape.position.x)) /
-					(semiMajorAxis * semiMajorAxis);
-				const isInYAxis =
-					((worldY - tempShape.position.y) *
-						(worldY - tempShape.position.y)) /
-					(semiMinorAxis * semiMinorAxis);
-				if (isInXAxis + isInYAxis < 1) {
-					console.log(tempShape.id);
-					console.log(tempShape);
-					currSelectedShapeRef.current = {
-						id: tempShape.id,
-						position: {
-							x: tempShape.position.x - tempShape.geometry.radX,
-							y: tempShape.position.y - tempShape.geometry.radY,
-						},
-						geometry: {
-							type: "circle",
-							width: tempShape.geometry.radX * 2,
-							height: tempShape.geometry.radY * 2,
-						},
-					};
-					render(
-						ctx,
-						canvas,
-						allShapes.current,
-						currentShapeBeingDrawnRef,
-						currSelectedShapeRef,
-						zoomRef.current,
-						offsetXRef.current,
-						offsetYRef.current,
-					);
-					return;
-				}
-			} else if (tempShape.geometry.type === "line") {
-				const x1 = tempShape.position.x;
-				const y1 = tempShape.position.y;
-				const x2 = tempShape.geometry.dX + tempShape.position.x;
-				const y2 = tempShape.geometry.dY + tempShape.position.y;
+// 			const screenX = e.clientX - rect.left;
+// 			const screenY = e.clientY - rect.top;
+// 			const worldX = (screenX - offsetXRef.current) / zoomRef.current;
+// 			const worldY = (screenY - offsetYRef.current) / zoomRef.current;
+// 			if (!tempShape) {
+// 				continue;
+// 			}
+// 			if (tempShape.geometry.type === "rect") {
+// 				const isInXAxis =
+// 					worldX >= tempShape.position.x! &&
+// 					worldX <= tempShape.geometry.width! + tempShape.position.x;
+// 				const isInYAxis =
+// 					worldY >= tempShape.position.y! &&
+// 					worldY <= tempShape.geometry.height! + tempShape.position.y;
+// 				console.log(
+// 					`isInXAxis = ${isInXAxis}, isInYAxis = ${isInYAxis}\nx = ${tempShape.position.x}, y = ${tempShape.position.y} and  endX = ${tempShape.geometry.width! + tempShape.position.x}, endY = ${tempShape.geometry.height! + tempShape.position.y}`,
+// 				);
+// 				if (isInXAxis && isInYAxis) {
+// 					console.log(tempShape.id);
+// 					console.log(tempShape);
+// 					currSelectedShapeRef.current = {
+// 						id: tempShape.id,
+// 						position: tempShape.position,
+// 						geometry: {
+// 							type: "rect",
+// 							width: tempShape.geometry.width,
+// 							height: tempShape.geometry.height,
+// 						},
+// 					};
+// 					render(
+// 						ctx,
+// 						canvas,
+// 						allShapes.current,
+// 						currentShapeBeingDrawnRef,
+// 						currSelectedShapeRef,
+// 						zoomRef.current,
+// 						offsetXRef.current,
+// 						offsetYRef.current,
+// 					);
+// 					return;
+// 				}
+// 			} else if (tempShape.geometry.type === "circle") {
+// 				//after implementing the rotation feature, the points x and y will need to be rotated by the angle of rotation in the opposite direction and then use them for calulation
+// 				const semiMajorAxis =
+// 					tempShape.geometry.radX >= tempShape.geometry.radY
+// 						? tempShape.geometry.radX
+// 						: tempShape.geometry.radY;
+// 				const semiMinorAxis =
+// 					tempShape.geometry.radX <= tempShape.geometry.radY
+// 						? tempShape.geometry.radX
+// 						: tempShape.geometry.radY;
 
-				const closestPoint = projectPointOnLine(
-					{ x: worldX, y: worldY },
-					{ x: x1, y: y1 },
-					{ x: x2, y: y2 },
-				);
+// 				const isInXAxis =
+// 					((worldX - tempShape.position.x) *
+// 						(worldX - tempShape.position.x)) /
+// 					(semiMajorAxis * semiMajorAxis);
+// 				const isInYAxis =
+// 					((worldY - tempShape.position.y) *
+// 						(worldY - tempShape.position.y)) /
+// 					(semiMinorAxis * semiMinorAxis);
+// 				if (isInXAxis + isInYAxis < 1) {
+// 					console.log(tempShape.id);
+// 					console.log(tempShape);
+// 					currSelectedShapeRef.current = {
+// 						id: tempShape.id,
+// 						position: {
+// 							x: tempShape.position.x - tempShape.geometry.radX,
+// 							y: tempShape.position.y - tempShape.geometry.radY,
+// 						},
+// 						geometry: {
+// 							type: "circle",
+// 							width: tempShape.geometry.radX * 2,
+// 							height: tempShape.geometry.radY * 2,
+// 						},
+// 					};
+// 					render(
+// 						ctx,
+// 						canvas,
+// 						allShapes.current,
+// 						currentShapeBeingDrawnRef,
+// 						currSelectedShapeRef,
+// 						zoomRef.current,
+// 						offsetXRef.current,
+// 						offsetYRef.current,
+// 					);
+// 					return;
+// 				}
+// 			} else if (tempShape.geometry.type === "line") {
+// 				const x1 = tempShape.position.x;
+// 				const y1 = tempShape.position.y;
+// 				const x2 = tempShape.geometry.dX + tempShape.position.x;
+// 				const y2 = tempShape.geometry.dY + tempShape.position.y;
 
-				const distanceToPoint = Math.sqrt(
-					(worldY - closestPoint.y) * (worldY - closestPoint.y) +
-						(worldX - closestPoint.x) * (worldX - closestPoint.x),
-				);
+// 				const closestPoint = projectPointOnLine(
+// 					{ x: worldX, y: worldY },
+// 					{ x: x1, y: y1 },
+// 					{ x: x2, y: y2 },
+// 				);
 
-				if (distanceToPoint < 7) {
-					console.log(tempShape.id);
-					console.log(tempShape);
-					currSelectedShapeRef.current = {
-						id: tempShape.id,
-						position: tempShape.position,
-						geometry: {
-							type: "line",
-							width: tempShape.geometry.dX,
-							height: tempShape.geometry.dY,
-						},
-					};
-					render(
-						ctx,
-						canvas,
-						allShapes.current,
-						currentShapeBeingDrawnRef,
-						currSelectedShapeRef,
-						zoomRef.current,
-						offsetXRef.current,
-						offsetYRef.current,
-					);
-					return;
-				}
-			}
-			// else if(tempShape.geometry.type === "draw") {
-			// 	let x1 = tempShape.position.x;
-			// 	let y1 = tempShape.position.y;
-			// 	for (let j = 0; j < tempShape.geometry.allCoordinates.length; j++) {
-			// 	if(!tempShape.geometry.allCoordinates[j]) return;
-			// 	if(j !== 0) {
-			// 		x1 = tempShape.geometry.allCoordinates[j-1]?.x!;
-			// 		y1 = tempShape.geometry.allCoordinates[j-1]?.y!;
-			// 	}
-			// 	let x2 = tempShape.geometry.allCoordinates[j]?.x;
-			// 	let y2 = tempShape.geometry.allCoordinates[j]?.y;
+// 				const distanceToPoint = Math.sqrt(
+// 					(worldY - closestPoint.y) * (worldY - closestPoint.y) +
+// 						(worldX - closestPoint.x) * (worldX - closestPoint.x),
+// 				);
 
-			// 	let closestPoint = projectPointOnLine(
-			// 		{ x: worldX, y: worldY },
-			// 		{ x: x1, y: y1 },
-			// 		{ x: x2!, y: y2! },
-			// 	);
+// 				if (distanceToPoint < 7) {
+// 					console.log(tempShape.id);
+// 					console.log(tempShape);
+// 					currSelectedShapeRef.current = {
+// 						id: tempShape.id,
+// 						position: tempShape.position,
+// 						geometry: {
+// 							type: "line",
+// 							width: tempShape.geometry.dX,
+// 							height: tempShape.geometry.dY,
+// 						},
+// 					};
+// 					render(
+// 						ctx,
+// 						canvas,
+// 						allShapes.current,
+// 						currentShapeBeingDrawnRef,
+// 						currSelectedShapeRef,
+// 						zoomRef.current,
+// 						offsetXRef.current,
+// 						offsetYRef.current,
+// 					);
+// 					return;
+// 				}
+// 			}
+// 			// else if(tempShape.geometry.type === "draw") {
+// 			// 	let x1 = tempShape.position.x;
+// 			// 	let y1 = tempShape.position.y;
+// 			// 	for (let j = 0; j < tempShape.geometry.allCoordinates.length; j++) {
+// 			// 	if(!tempShape.geometry.allCoordinates[j]) return;
+// 			// 	if(j !== 0) {
+// 			// 		x1 = tempShape.geometry.allCoordinates[j-1]?.x!;
+// 			// 		y1 = tempShape.geometry.allCoordinates[j-1]?.y!;
+// 			// 	}
+// 			// 	let x2 = tempShape.geometry.allCoordinates[j]?.x;
+// 			// 	let y2 = tempShape.geometry.allCoordinates[j]?.y;
 
-			// 	let distanceToPoint = Math.sqrt(
-			// 		(worldY - closestPoint.y) * (worldY - closestPoint.y) +
-			// 			(worldX - closestPoint.x) * (worldX - closestPoint.x),
-			// 	);
+// 			// 	let closestPoint = projectPointOnLine(
+// 			// 		{ x: worldX, y: worldY },
+// 			// 		{ x: x1, y: y1 },
+// 			// 		{ x: x2!, y: y2! },
+// 			// 	);
 
-			// 	if (distanceToPoint < 7) {
-			// 		console.log(tempShape.id);
-			// 		console.log(tempShape);
-			// 		currSelectedShapeRef.current = {
-			// 			id: tempShape.id,
-			// 			position: tempShape.position,
-			// 			geometry: {
-			// 				width: tempShape.geometry.maxCoordinates.x - tempShape.geometry.minCoordinates.x,
-			// 				height: tempShape.geometry.maxCoordinates.y - tempShape.geometry.minCoordinates.y,
-			// 			},
-			// 		};
-			// 		render(
-			// 			ctx,
-			// 			canvas,
-			// 			allShapes.current,
-			// 			currentShapeBeingDrawnRef,
-			// 			currSelectedShapeRef,
-			// 			zoomRef.current,
-			// 			offsetXRef.current,
-			// 			offsetYRef.current,
-			// 		);
-			// 		return;
-			// 	}
-			// }
-			// }
-			else if (tempShape.geometry.type === "text") {
-				const isInXAxis =
-					worldX >= tempShape.position.x - 6 &&
-					worldX <=
-						tempShape.geometry.width +
-							12 +
-							(tempShape.position.x - 6);
-				const isInYAxis =
-					worldY >= tempShape.position.y - 4 &&
-					worldY <=
-						tempShape.geometry.height + (tempShape.position.y - 4);
-				if (isInXAxis && isInYAxis) {
-					console.log(tempShape.id);
-					console.log(tempShape);
-					currSelectedShapeRef.current = {
-						id: tempShape.id,
-						position: {
-							x: tempShape.position.x - 6,
-							y: tempShape.position.y - 4,
-						},
-						geometry: {
-							type: "text",
-							width: tempShape.geometry.width + 12,
-							height: tempShape.geometry.height,
-						},
-					};
-					render(
-						ctx,
-						canvas,
-						allShapes.current,
-						currentShapeBeingDrawnRef,
-						currSelectedShapeRef,
-						zoomRef.current,
-						offsetXRef.current,
-						offsetYRef.current,
-					);
-					setTextAreaValue(tempShape.geometry.text);
-					toggleTextArea(
-						true,
-						setIsTextAreaActive,
-						setTextAreaPosition,
-						tempShape.position.x,
-						tempShape.position.y,
-					);
-					return;
-				}
-			} else {
-				currSelectedShapeRef.current = null;
-				render(
-					ctx,
-					canvas,
-					allShapes.current,
-					currentShapeBeingDrawnRef,
-					currSelectedShapeRef,
-					zoomRef.current,
-					offsetXRef.current,
-					offsetYRef.current,
-				);
-			}
-		}
-	};
+// 			// 	let distanceToPoint = Math.sqrt(
+// 			// 		(worldY - closestPoint.y) * (worldY - closestPoint.y) +
+// 			// 			(worldX - closestPoint.x) * (worldX - closestPoint.x),
+// 			// 	);
 
-	const handleMouseDown = (e: MouseEvent) => {
-		if (currentTool == "cursor") {
-			findShapes(e);
-			// return;
-		} else {
-			// currSelectedShapeRef.current = null;
-			console.log("canvasContext() text mouse down called.");
-			clicked = true;
-			startXRef.current = (e.clientX - offsetXRef.current) / zoomRef.current;
-			startYRef.current = (e.clientY - offsetYRef.current) / zoomRef.current;
-			if (
-				currentTool == "text" &&
-				!isTextAreaActiveRef.current.isActive
-			) {
-				toggleTextArea(
-					true,
-					setIsTextAreaActive,
-					setTextAreaPosition,
-					startXRef.current,
-					startYRef.current,
-				);
-			}
-		}
-	};
+// 			// 	if (distanceToPoint < 7) {
+// 			// 		console.log(tempShape.id);
+// 			// 		console.log(tempShape);
+// 			// 		currSelectedShapeRef.current = {
+// 			// 			id: tempShape.id,
+// 			// 			position: tempShape.position,
+// 			// 			geometry: {
+// 			// 				width: tempShape.geometry.maxCoordinates.x - tempShape.geometry.minCoordinates.x,
+// 			// 				height: tempShape.geometry.maxCoordinates.y - tempShape.geometry.minCoordinates.y,
+// 			// 			},
+// 			// 		};
+// 			// 		render(
+// 			// 			ctx,
+// 			// 			canvas,
+// 			// 			allShapes.current,
+// 			// 			currentShapeBeingDrawnRef,
+// 			// 			currSelectedShapeRef,
+// 			// 			zoomRef.current,
+// 			// 			offsetXRef.current,
+// 			// 			offsetYRef.current,
+// 			// 		);
+// 			// 		return;
+// 			// 	}
+// 			// }
+// 			// }
+// 			else if (tempShape.geometry.type === "text") {
+// 				const isInXAxis =
+// 					worldX >= tempShape.position.x - 6 &&
+// 					worldX <=
+// 						tempShape.geometry.width +
+// 							12 +
+// 							(tempShape.position.x - 6);
+// 				const isInYAxis =
+// 					worldY >= tempShape.position.y - 4 &&
+// 					worldY <=
+// 						tempShape.geometry.height + (tempShape.position.y - 4);
+// 				if (isInXAxis && isInYAxis) {
+// 					console.log(tempShape.id);
+// 					console.log(tempShape);
+// 					currSelectedShapeRef.current = {
+// 						id: tempShape.id,
+// 						position: {
+// 							x: tempShape.position.x - 6,
+// 							y: tempShape.position.y - 4,
+// 						},
+// 						geometry: {
+// 							type: "text",
+// 							width: tempShape.geometry.width + 12,
+// 							height: tempShape.geometry.height,
+// 						},
+// 					};
+// 					render(
+// 						ctx,
+// 						canvas,
+// 						allShapes.current,
+// 						currentShapeBeingDrawnRef,
+// 						currSelectedShapeRef,
+// 						zoomRef.current,
+// 						offsetXRef.current,
+// 						offsetYRef.current,
+// 					);
+// 					setTextAreaValue(tempShape.geometry.text);
+// 					toggleTextArea(
+// 						true,
+// 						setIsTextAreaActive,
+// 						setTextAreaPosition,
+// 						tempShape.position.x,
+// 						tempShape.position.y,
+// 					);
+// 					return;
+// 				}
+// 			} else {
+// 				currSelectedShapeRef.current = null;
+// 				render(
+// 					ctx,
+// 					canvas,
+// 					allShapes.current,
+// 					currentShapeBeingDrawnRef,
+// 					currSelectedShapeRef,
+// 					zoomRef.current,
+// 					offsetXRef.current,
+// 					offsetYRef.current,
+// 				);
+// 			}
+// 		}
+// 	};
 
-	const handleMouseUp = (e: MouseEvent) => {
-		if (!clicked || currentTool == "cursor") {
-			return;
-		}
-		clicked = false;
-		let shape:
-			| {
-					type: "rect";
-					x: number;
-					y: number;
-					width: number;
-					height: number;
-			  }
-			| {
-					type: "circle";
-					x: number;
-					y: number;
-					radX: number;
-					radY: number;
-			  }
-			| {
-					type: "line";
-					x: number;
-					y: number;
-					toX: number;
-					toY: number;
-			  }
-			| {
-					type: "draw";
-					x: number;
-					y: number;
-					allCoordinates: coordinatesType[];
-			  }
-			| {
-					type: "text";
-					x: number;
-					y: number;
-					text: string;
-			  }
-			| null = null;
-		interface shapeSpecificType {
-			position: {
-				x: number;
-				y: number;
-			};
-			geometry: shapeGeometryType;
-		}
-		let shapeSpecificProps: shapeSpecificType | null = null;
-		const rect = canvas.getBoundingClientRect();
+// 	const handleMouseDown = (e: MouseEvent) => {
+// 		if (currentTool == "cursor") {
+// 			findShapes(e);
+// 			// return;
+// 		} else {
+// 			// currSelectedShapeRef.current = null;
+// 			console.log("canvasContext() text mouse down called.");
+// 			clicked = true;
+// 			startXRef.current =
+// 				(e.clientX - offsetXRef.current) / zoomRef.current;
+// 			startYRef.current =
+// 				(e.clientY - offsetYRef.current) / zoomRef.current;
+// 			if (
+// 				currentTool == "text" &&
+// 				!isTextAreaActiveRef.current.isActive
+// 			) {
+// 				toggleTextArea(
+// 					true,
+// 					setIsTextAreaActive,
+// 					setTextAreaPosition,
+// 					startXRef.current,
+// 					startYRef.current,
+// 				);
+// 			}
+// 		}
+// 	};
 
-		const screenX = e.clientX - rect.left;
-		const screenY = e.clientY - rect.top;
-		const worldX = (screenX - offsetXRef.current) / zoomRef.current;
-		const worldY = (screenY - offsetYRef.current) / zoomRef.current;
+// 	const handleMouseUp = (e: MouseEvent) => {
+// 		if (!clicked || currentTool == "cursor") {
+// 			return;
+// 		}
+// 		clicked = false;
+// 		let shape:
+// 			| {
+// 					type: "rect";
+// 					x: number;
+// 					y: number;
+// 					width: number;
+// 					height: number;
+// 			  }
+// 			| {
+// 					type: "circle";
+// 					x: number;
+// 					y: number;
+// 					radX: number;
+// 					radY: number;
+// 			  }
+// 			| {
+// 					type: "line";
+// 					x: number;
+// 					y: number;
+// 					toX: number;
+// 					toY: number;
+// 			  }
+// 			| {
+// 					type: "draw";
+// 					x: number;
+// 					y: number;
+// 					allCoordinates: CoordinatesType[];
+// 			  }
+// 			| {
+// 					type: "text";
+// 					x: number;
+// 					y: number;
+// 					text: string;
+// 			  }
+// 			| null = null;
+// 		interface shapeSpecificType {
+// 			position: {
+// 				x: number;
+// 				y: number;
+// 			};
+// 			geometry: shapeGeometryType;
+// 		}
+// 		let shapeSpecificProps: shapeSpecificType | null = null;
+// 		const rect = canvas.getBoundingClientRect();
 
-		if (currentTool === "rect") {
-			const x = Math.min(startXRef.current, worldX);
-			const y = Math.min(startYRef.current, worldY);
-			const width = Math.abs(worldX - startXRef.current);
-			const height = Math.abs(worldY - startYRef.current);
+// 		const screenX = e.clientX - rect.left;
+// 		const screenY = e.clientY - rect.top;
+// 		const worldX = (screenX - offsetXRef.current) / zoomRef.current;
+// 		const worldY = (screenY - offsetYRef.current) / zoomRef.current;
 
-			shapeSpecificProps = {
-				position: {
-					x,
-					y,
-				},
-				geometry: {
-					type: "rect",
-					width,
-					height,
-				},
-			};
-		} else if (currentTool === "circle") {
-			const centerX = (startXRef.current + worldX) / 2;
-			const centerY = (startYRef.current + worldY) / 2;
-			const radX = Math.abs(centerX - worldX);
-			const radY = Math.abs(centerY - worldY);
+// 		if (currentTool === "rect") {
+// 			const x = Math.min(startXRef.current, worldX);
+// 			const y = Math.min(startYRef.current, worldY);
+// 			const width = Math.abs(worldX - startXRef.current);
+// 			const height = Math.abs(worldY - startYRef.current);
 
-			shapeSpecificProps = {
-				position: {
-					x: centerX,
-					y: centerY,
-				},
-				geometry: {
-					type: "circle",
-					radX,
-					radY,
-				},
-			};
-		} else if (currentTool == "line") {
-			const dX = worldX - startXRef.current;
-			const dY = worldY - startYRef.current;
+// 			shapeSpecificProps = {
+// 				position: {
+// 					x,
+// 					y,
+// 				},
+// 				geometry: {
+// 					type: "rect",
+// 					width,
+// 					height,
+// 				},
+// 			};
+// 		} else if (currentTool === "circle") {
+// 			const centerX = (startXRef.current + worldX) / 2;
+// 			const centerY = (startYRef.current + worldY) / 2;
+// 			const radX = Math.abs(centerX - worldX);
+// 			const radY = Math.abs(centerY - worldY);
 
-			shapeSpecificProps = {
-				position: {
-					x: startXRef.current,
-					y: startYRef.current,
-				},
-				geometry: {
-					type: "line",
-					dX,
-					dY,
-				},
-			};
-		} else if (currentTool == "draw") {
-			if (currentShapeBeingDrawnRef.current?.geometry.type !== "draw") return;
-			shapeSpecificProps = {
-				position: {
-					x: startXRef.current,
-					y: startYRef.current,
-				},
-				geometry: {
-					type: "draw",
-					allCoordinates: allCoordinates,
-					minCoordinates:
-						currentShapeBeingDrawnRef.current.geometry.minCoordinates,
-					maxCoordinates:
-						currentShapeBeingDrawnRef.current.geometry.maxCoordinates,
-				},
-			};
-			allCoordinates = [];
-		}
+// 			shapeSpecificProps = {
+// 				position: {
+// 					x: centerX,
+// 					y: centerY,
+// 				},
+// 				geometry: {
+// 					type: "circle",
+// 					radX,
+// 					radY,
+// 				},
+// 			};
+// 		} else if (currentTool == "line") {
+// 			const dX = worldX - startXRef.current;
+// 			const dY = worldY - startYRef.current;
 
-		if (!shapeSpecificProps) {
-			return;
-		}
-		let genericShape = {
-			id: nanoid(),
-			position: shapeSpecificProps.position,
-			geometry: shapeSpecificProps.geometry,
-			style: {
-				fill: true,
-				color: "white",
-				strokeWidth: 2,
-				opacity: 1,
-			},
-			transform: {
-				rotation: 0,
-				scaleX: 1,
-				scaleY: 2,
-			},
-			metadata: {
-				createdAt: Date.now(),
-				updatedAt: Date.now(),
-				createdBy: "User1",
-			},
-		};
-		addShapes(genericShape);
-		currentShapeBeingDrawnRef.current = null;
+// 			shapeSpecificProps = {
+// 				position: {
+// 					x: startXRef.current,
+// 					y: startYRef.current,
+// 				},
+// 				geometry: {
+// 					type: "line",
+// 					dX,
+// 					dY,
+// 				},
+// 			};
+// 		} else if (currentTool == "draw") {
+// 			if (currentShapeBeingDrawnRef.current?.geometry.type !== "draw")
+// 				return;
+// 			shapeSpecificProps = {
+// 				position: {
+// 					x: startXRef.current,
+// 					y: startYRef.current,
+// 				},
+// 				geometry: {
+// 					type: "draw",
+// 					allCoordinates: allCoordinates,
+// 					minCoordinates:
+// 						currentShapeBeingDrawnRef.current.geometry
+// 							.minCoordinates,
+// 					maxCoordinates:
+// 						currentShapeBeingDrawnRef.current.geometry
+// 							.maxCoordinates,
+// 				},
+// 			};
+// 			allCoordinates = [];
+// 		}
 
-		if (roomId) {
-			// console.log('sending');
-			sendShapes(socket!, shape!, roomId, userName!);
-		}
+// 		if (!shapeSpecificProps) {
+// 			return;
+// 		}
+// 		let genericShape = {
+// 			id: nanoid(),
+// 			position: shapeSpecificProps.position,
+// 			geometry: shapeSpecificProps.geometry,
+// 			style: {
+// 				fill: true,
+// 				color: "white",
+// 				strokeWidth: 2,
+// 				opacity: 1,
+// 			},
+// 			transform: {
+// 				rotation: 0,
+// 				scaleX: 1,
+// 				scaleY: 2,
+// 			},
+// 			metadata: {
+// 				createdAt: Date.now(),
+// 				updatedAt: Date.now(),
+// 				createdBy: "User1",
+// 			},
+// 		};
+// 		addShapes(genericShape);
+// 		currentShapeBeingDrawnRef.current = null;
 
-		render(
-			ctx,
-			canvas,
-			allShapes.current,
-			currentShapeBeingDrawnRef,
-			currSelectedShapeRef,
-			zoomRef.current,
-			offsetXRef.current,
-			offsetYRef.current,
-		);
-	};
+// 		if (roomId) {
+// 			// console.log('sending');
+// 			sendShapes(socket!, shape!, roomId, userName!);
+// 		}
 
-	const handleMouseMove = (e: MouseEvent) => {
-		if (!clicked || currentTool === "cursor") {
-			return;
-		}
+// 		render(
+// 			ctx,
+// 			canvas,
+// 			allShapes.current,
+// 			currentShapeBeingDrawnRef,
+// 			currSelectedShapeRef,
+// 			zoomRef.current,
+// 			offsetXRef.current,
+// 			offsetYRef.current,
+// 		);
+// 	};
 
-		canvas.addEventListener("keydown", (e) => {
-			// console.log("key pressed = ", e.key);
-		});
+// 	const handleMouseMove = (e: MouseEvent) => {
+// 		if (!clicked || currentTool === "cursor") {
+// 			return;
+// 		}
 
-		const rect = canvas.getBoundingClientRect();
+// 		canvas.addEventListener("keydown", (e) => {
+// 			// console.log("key pressed = ", e.key);
+// 		});
 
-		const screenX = e.clientX - rect.left;
-		const screenY = e.clientY - rect.top;
-		const worldX = (screenX - offsetXRef.current) / zoomRef.current;
-		const worldY = (screenY - offsetYRef.current) / zoomRef.current;
+// 		const rect = canvas.getBoundingClientRect();
 
-		if (currentTool === "rect") {
-			const x = Math.min(startXRef.current, worldX);
-			const y = Math.min(startYRef.current, worldY);
-			const width = Math.abs(worldX - startXRef.current);
-			const height = Math.abs(worldY - startYRef.current);
+// 		const screenX = e.clientX - rect.left;
+// 		const screenY = e.clientY - rect.top;
+// 		const worldX = (screenX - offsetXRef.current) / zoomRef.current;
+// 		const worldY = (screenY - offsetYRef.current) / zoomRef.current;
 
-			currentShapeBeingDrawnRef.current = {
-				position: {
-					x,
-					y,
-				},
-				geometry: {
-					type: "rect",
-					width,
-					height,
-				},
-			};
-		} else if (currentTool === "circle") {
-			const centerX = (startXRef.current + worldX) / 2;
-			const centerY = (startYRef.current + worldY) / 2;
-			const radX = Math.abs(centerX - worldX);
-			const radY = Math.abs(centerY - worldY);
+// 		if (currentTool === "rect") {
+// 			const x = Math.min(startXRef.current, worldX);
+// 			const y = Math.min(startYRef.current, worldY);
+// 			const width = Math.abs(worldX - startXRef.current);
+// 			const height = Math.abs(worldY - startYRef.current);
 
-			currentShapeBeingDrawnRef.current = {
-				position: {
-					x: centerX,
-					y: centerY,
-				},
-				geometry: {
-					type: "circle",
-					radX: radX,
-					radY: radY,
-				},
-			};
-		} else if (currentTool == "line") {
-			const dX = worldX - startXRef.current;
-			const dY = worldY - startYRef.current;
+// 			currentShapeBeingDrawnRef.current = {
+// 				position: {
+// 					x,
+// 					y,
+// 				},
+// 				geometry: {
+// 					type: "rect",
+// 					width,
+// 					height,
+// 				},
+// 			};
+// 		} else if (currentTool === "circle") {
+// 			const centerX = (startXRef.current + worldX) / 2;
+// 			const centerY = (startYRef.current + worldY) / 2;
+// 			const radX = Math.abs(centerX - worldX);
+// 			const radY = Math.abs(centerY - worldY);
 
-			currentShapeBeingDrawnRef.current = {
-				position: {
-					x: startXRef.current,
-					y: startYRef.current,
-				},
-				geometry: {
-					type: "line",
-					dX,
-					dY,
-				},
-			};
-		} else if (currentTool == "draw") {
-			allCoordinates.push({ x: worldX, y: worldY });
+// 			currentShapeBeingDrawnRef.current = {
+// 				position: {
+// 					x: centerX,
+// 					y: centerY,
+// 				},
+// 				geometry: {
+// 					type: "circle",
+// 					radX: radX,
+// 					radY: radY,
+// 				},
+// 			};
+// 		} else if (currentTool == "line") {
+// 			const dX = worldX - startXRef.current;
+// 			const dY = worldY - startYRef.current;
 
-			currentShapeBeingDrawnRef.current = {
-				position: {
-					x: startXRef.current,
-					y: startYRef.current,
-				},
-				geometry: {
-					type: "draw",
-					allCoordinates,
-					minCoordinates: {
-						x: Math.min(startXRef.current, worldX),
-						y: Math.min(startYRef.current, worldY),
-					},
-					maxCoordinates: {
-						x: Math.max(startXRef.current, worldX),
-						y: Math.max(startXRef.current, worldY),
-					},
-				},
-			};
-		}
-		render(
-			ctx,
-			canvas,
-			allShapes.current,
-			currentShapeBeingDrawnRef,
-			currSelectedShapeRef,
-			zoomRef.current,
-			offsetXRef.current,
-			offsetYRef.current,
-		);
-		if (currentTool === "drag") {
-			const startMousePos = {
-				x: startXRef.current * zoomRef.current + offsetXRef.current,
-				y: startYRef.current * zoomRef.current + offsetYRef.current,
-			};
+// 			currentShapeBeingDrawnRef.current = {
+// 				position: {
+// 					x: startXRef.current,
+// 					y: startYRef.current,
+// 				},
+// 				geometry: {
+// 					type: "line",
+// 					dX,
+// 					dY,
+// 				},
+// 			};
+// 		} else if (currentTool == "draw") {
+// 			allCoordinates.push({ x: worldX, y: worldY });
 
-			const currMousePos = {
-				x: worldX * zoomRef.current + offsetXRef.current,
-				y: worldY * zoomRef.current + offsetYRef.current,
-			};
+// 			currentShapeBeingDrawnRef.current = {
+// 				position: {
+// 					x: startXRef.current,
+// 					y: startYRef.current,
+// 				},
+// 				geometry: {
+// 					type: "draw",
+// 					allCoordinates,
+// 					minCoordinates: {
+// 						x: Math.min(startXRef.current, worldX),
+// 						y: Math.min(startYRef.current, worldY),
+// 					},
+// 					maxCoordinates: {
+// 						x: Math.max(startXRef.current, worldX),
+// 						y: Math.max(startXRef.current, worldY),
+// 					},
+// 				},
+// 			};
+// 		}
+// 		render(
+// 			ctx,
+// 			canvas,
+// 			allShapes.current,
+// 			currentShapeBeingDrawnRef,
+// 			currSelectedShapeRef,
+// 			zoomRef.current,
+// 			offsetXRef.current,
+// 			offsetYRef.current,
+// 		);
+// 		if (currentTool === "drag") {
+// 			const startMousePos = {
+// 				x: startXRef.current * zoomRef.current + offsetXRef.current,
+// 				y: startYRef.current * zoomRef.current + offsetYRef.current,
+// 			};
 
-			startXRef.current = worldX;
-			startYRef.current = worldY;
+// 			const currMousePos = {
+// 				x: worldX * zoomRef.current + offsetXRef.current,
+// 				y: worldY * zoomRef.current + offsetYRef.current,
+// 			};
 
-			const diff = diffPoints(startMousePos, currMousePos);
+// 			startXRef.current = worldX;
+// 			startYRef.current = worldY;
 
-			if (Math.abs(diff.x) < 0.1) {
-				return;
-			}
+// 			const diff = diffPoints(startMousePos, currMousePos);
 
-			requestAnimationFrame(() => {
-				const newTempOffset = addPoints(
-					{ x: offsetXRef.current, y: offsetYRef.current },
-					diff,
-				);
-				changeOffset(newTempOffset.x, newTempOffset.y);
-			});
-		}
-	};
+// 			if (Math.abs(diff.x) < 0.1) {
+// 				return;
+// 			}
 
-	const diffPoints = (
-		p1: { x: number; y: number },
-		p2: { x: number; y: number },
-	) => {
-		return { x: p2.x - p1.x, y: p2.y - p1.y };
-	};
+// 			requestAnimationFrame(() => {
+// 				const newTempOffset = addPoints(
+// 					{ x: offsetXRef.current, y: offsetYRef.current },
+// 					diff,
+// 				);
+// 				changeOffset(newTempOffset.x, newTempOffset.y);
+// 			});
+// 		}
+// 	};
 
-	const addPoints = (
-		prevOffset: { x: number; y: number },
-		diff: { x: number; y: number },
-	) => {
-		return { x: prevOffset.x + diff.x, y: prevOffset.y + diff.y };
-	};
+// 	const diffPoints = (
+// 		p1: { x: number; y: number },
+// 		p2: { x: number; y: number },
+// 	) => {
+// 		return { x: p2.x - p1.x, y: p2.y - p1.y };
+// 	};
 
-	const handleWheel = (e: WheelEvent) => {
-		e.preventDefault();
-		const zoom = zoomRef.current;
-		const offsetX = offsetXRef.current;
-		const offsetY = offsetYRef.current;
+// 	const addPoints = (
+// 		prevOffset: { x: number; y: number },
+// 		diff: { x: number; y: number },
+// 	) => {
+// 		return { x: prevOffset.x + diff.x, y: prevOffset.y + diff.y };
+// 	};
 
-		const zoomIntensity = 0.001;
-		const zoomFactor = Math.exp(-e.deltaY * zoomIntensity);
+// 	const handleWheel = (e: WheelEvent) => {
+// 		e.preventDefault();
+// 		const zoom = zoomRef.current;
+// 		const offsetX = offsetXRef.current;
+// 		const offsetY = offsetYRef.current;
 
-		const rect = canvas.getBoundingClientRect();
+// 		const zoomIntensity = 0.001;
+// 		const zoomFactor = Math.exp(-e.deltaY * zoomIntensity);
 
-		const screenX = e.clientX - rect.left;
-		const screenY = e.clientY - rect.top;
-		const worldX = (screenX - offsetX) / zoom;
-		const worldY = (screenY - offsetY) / zoom;
+// 		const rect = canvas.getBoundingClientRect();
 
-		const newZoom = Math.min(Math.max(zoom * zoomFactor, 0.05), 20);
-		const newOffsetX = screenX - worldX * newZoom;
-		const newOffsetY = screenY - worldY * newZoom;
+// 		const screenX = e.clientX - rect.left;
+// 		const screenY = e.clientY - rect.top;
+// 		const worldX = (screenX - offsetX) / zoom;
+// 		const worldY = (screenY - offsetY) / zoom;
 
-		requestAnimationFrame(() => {
-			changeZoom(newZoom);
-			changeOffset(newOffsetX, newOffsetY);
-		});
-	};
+// 		const newZoom = Math.min(Math.max(zoom * zoomFactor, 0.05), 20);
+// 		const newOffsetX = screenX - worldX * newZoom;
+// 		const newOffsetY = screenY - worldY * newZoom;
 
-	canvas.addEventListener("mousedown", handleMouseDown);
+// 		requestAnimationFrame(() => {
+// 			changeZoom(newZoom);
+// 			changeOffset(newOffsetX, newOffsetY);
+// 		});
+// 	};
 
-	canvas.addEventListener("mouseup", handleMouseUp);
+// 	canvas.addEventListener("mousedown", handleMouseDown);
 
-	canvas.addEventListener("mousemove", handleMouseMove);
+// 	canvas.addEventListener("mouseup", handleMouseUp);
 
-	canvas.addEventListener("wheel", handleWheel, { passive: false });
+// 	canvas.addEventListener("mousemove", handleMouseMove);
 
-	return () => {
-		canvas.removeEventListener("mousedown", handleMouseDown);
-		canvas.removeEventListener("mousemove", handleMouseMove);
-		canvas.removeEventListener("mouseup", handleMouseUp);
-		canvas.removeEventListener("wheel", handleWheel);
-	};
-}
+// 	canvas.addEventListener("wheel", handleWheel, { passive: false });
+
+// 	return () => {
+// 		canvas.removeEventListener("mousedown", handleMouseDown);
+// 		canvas.removeEventListener("mousemove", handleMouseMove);
+// 		canvas.removeEventListener("mouseup", handleMouseUp);
+// 		canvas.removeEventListener("wheel", handleWheel);
+// 	};
+// }
 
 // const writeText = (e: KeyboardEvent) => {
 // 	toggleTextArea(
