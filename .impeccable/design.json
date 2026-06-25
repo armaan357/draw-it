@@ -1,0 +1,125 @@
+{
+	"schemaVersion": 2,
+	"generatedAt": "2026-05-29T12:00:00Z",
+	"title": "Design System: Draw-It",
+	"extensions": {
+		"colorMeta": {
+			"primary": {
+				"role": "primary",
+				"displayName": "Accent",
+				"canonical": "#6965db",
+				"tonalRamp": [
+					"#1b1637",
+					"#2a235e",
+					"#3a2f86",
+					"#5e58c2",
+					"#6965db",
+					"#8a86e8",
+					"#b2b0f3",
+					"#eae9ff"
+				]
+			},
+			"bg-default": {
+				"role": "background",
+				"displayName": "Background Default",
+				"canonical": "#000000"
+			},
+			"content-inverted": {
+				"role": "text",
+				"displayName": "Content Inverted",
+				"canonical": "#FFFFFF"
+			}
+		},
+		"typographyMeta": {
+			"display": {
+				"displayName": "Geist Sans (UI headings)",
+				"purpose": "UI headings and prominent labels"
+			},
+			"body": {
+				"displayName": "Geist Sans (body)",
+				"purpose": "Body copy and labels"
+			},
+			"mono": {
+				"displayName": "Geist Mono",
+				"purpose": "Code and monospace needs"
+			}
+		},
+		"shadows": [
+			{
+				"name": "card-hover",
+				"value": "0 8px 12px rgba(34,42,53,0.05), 0 32px 80px rgba(47,48,55,0.06)",
+				"purpose": "Hover lift for cards"
+			}
+		],
+		"motion": [
+			{
+				"name": "ease-standard",
+				"value": "cubic-bezier(0.16, 1, 0.3, 1)",
+				"purpose": "Default entrance + micro-interaction easing"
+			}
+		],
+		"breakpoints": [
+			{ "name": "xs", "value": "420px" },
+			{ "name": "sm", "value": "640px" }
+		]
+	},
+	"components": [
+		{
+			"name": "Primary Button",
+			"kind": "button",
+			"refersTo": "button-primary",
+			"description": "Primary CTA used for main actions",
+			"html": "<button class=\"ds-btn-primary\">Save changes</button>",
+			"css": ".ds-btn-primary{background:#6965db;color:#ffffff;padding:8px 16px;border-radius:8px;border:none;font-family:var(--font-geist-sans);font-weight:600;cursor:pointer;transition:transform .18s ease,background .18s ease}.ds-btn-primary:hover{transform:translateY(-2px);background:#5e58c2}.ds-btn-primary:focus-visible{outline:3px solid rgba(105,101,219,0.22);outline-offset:2px;}"
+		},
+		{
+			"name": "Secondary Button",
+			"kind": "button",
+			"refersTo": "button-secondary",
+			"description": "Secondary action with neutral surface",
+			"html": "<button class=\"ds-btn-secondary\">Cancel</button>",
+			"css": ".ds-btn-secondary{background:transparent;color:#ffffff;padding:8px 16px;border-radius:8px;border:1px solid rgba(255,255,255,0.08);font-family:var(--font-geist-sans);cursor:pointer;transition:background .14s ease,color .14s ease}.ds-btn-secondary:hover{background:rgba(255,255,255,0.03)}.ds-btn-secondary:focus-visible{outline:2px solid rgba(105,101,219,0.18);outline-offset:2px;}"
+		},
+		{
+			"name": "Input Field",
+			"kind": "input",
+			"refersTo": "input-text",
+			"description": "Text input with clear focus state",
+			"html": "<label class=\"ds-field\"><span class=\"ds-label\">Name</span><input class=\"ds-input\" /></label>",
+			"css": ".ds-field{display:flex;flex-direction:column;gap:6px;font-family:var(--font-geist-sans)}.ds-input{background:#0f0f0f;color:#fff;padding:10px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);font-size:14px}.ds-input:focus{border-color:#6965db;box-shadow:0 0 0 4px rgba(105,101,219,0.06)}.ds-label{color:rgba(255,255,255,0.75);font-size:12px}"
+		},
+		{
+			"name": "Card",
+			"kind": "card",
+			"refersTo": "card-default",
+			"description": "Surface used for grouping content",
+			"html": "<div class=\"ds-card\"><h3>Card title</h3><p>Card body text</p></div>",
+			"css": ".ds-card{background:#0b0b0b;color:#ffffff;padding:16px;border-radius:12px;box-shadow:0 4px 8px rgba(0,0,0,0.24)}.ds-card h3{margin:0 0 8px 0;font-family:var(--font-geist-sans);font-size:16px}.ds-card p{margin:0;color:rgba(255,255,255,0.85)}"
+		}
+	],
+	"narrative": {
+		"northStar": "A friendly, minimal collaborative sketchbook",
+		"overview": "A restrained, dark-first UI that keeps focus on drawing and collaboration while remaining accessible and fast.",
+		"keyCharacteristics": ["Minimal", "Creative", "Friendly"],
+		"rules": [
+			{
+				"name": "The One Voice Rule",
+				"body": "Reserve the primary accent for key CTAs and presence; avoid decorative usage.",
+				"section": "colors"
+			},
+			{
+				"name": "Flat-By-Default",
+				"body": "Surfaces are flat at rest; elevation appears as a response to interaction.",
+				"section": "elevation"
+			}
+		],
+		"dos": [
+			"Do prioritize clear affordances and fast time-to-first-canvas.",
+			"Do meet WCAG 2.1 AA contrast targets."
+		],
+		"donts": [
+			"Don't use gradient text or noisy purple-gradient marketing tropes.",
+			"Don't use side-stripe borders as a primary accent."
+		]
+	}
+}

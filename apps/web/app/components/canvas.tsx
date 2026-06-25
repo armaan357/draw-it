@@ -145,6 +145,7 @@ export function Canvas({
 			isTextAreaActiveRef,
 		};
 		const engineActions: EngineActionsArgumentType = {
+			changeTool,
 			addShapes,
 			removeShape,
 			repositionShape,

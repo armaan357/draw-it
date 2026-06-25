@@ -1,5 +1,9 @@
 import { RefObject } from "react";
-import { shapeGeometryType, shapesType } from "../../zustandState/storeTypes";
+import {
+	allToolsType,
+	shapeGeometryType,
+	shapesType,
+} from "../../zustandState/storeTypes";
 import { drawPreview } from "./drawPreview";
 import { CoordinatesType } from "../../types";
 
@@ -34,6 +38,7 @@ export const render = (
 	zoom: number,
 	offsetX: number,
 	offsetY: number,
+	changeTool?: (tool: allToolsType) => void,
 ) => {
 	const dpr = window.devicePixelRatio || 1;
 
@@ -66,6 +71,7 @@ export const render = (
 		zoom,
 		offsetX,
 		offsetY,
+		changeTool,
 	);
 };
 
@@ -84,6 +90,7 @@ export function drawCanvas(
 	zoom: number,
 	offsetX: number,
 	offsetY: number,
+	changeTool?: (tool: allToolsType) => void,
 ) {
 	ctx.strokeStyle = "white";
 
@@ -166,6 +173,9 @@ export function drawCanvas(
 	}
 	if (currentShapeBeingDrawnRef.current) {
 		drawPreview(ctx, currentShapeBeingDrawnRef);
+	}
+	if (changeTool) {
+		changeTool("cursor");
 	}
 }
 

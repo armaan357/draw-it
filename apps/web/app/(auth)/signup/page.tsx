@@ -66,10 +66,9 @@ export default function SignUp() {
 				</div>
 			</div>
 			<div className="w-full sm:w-md flex flex-col mx-auto justify-center items-center gap-6 border-none py-7 px-3">
-				<div>
-					<h1 className="text-2xl font-semibold select-none">
-						Sign Up
-					</h1>
+				<div className="relative w-full">
+					<div aria-hidden className="absolute -inset-x-6 -top-8 h-40 rounded-2xl blur-2xl opacity-25" style={{background: 'radial-gradient(closest-corner, rgba(var(--color-accent-rgb),0.18), transparent 40%)'}} />
+					<h1 className="text-3xl md:text-4xl font-extrabold select-none">Sign Up</h1>
 				</div>
 				<div className="flex flex-col w-full gap-5 justify-center items-center max-w-sm">
 					<InputBox
@@ -104,7 +103,7 @@ export default function SignUp() {
 				<div className="w-full flex flex-col justify-center items-center gap-2.5 max-w-sm">
 					<Button
 						variant="primary"
-						className="bg-purple-600 hover:bg-purple-700 w-full"
+						className="w-full"
 						size="full"
 						children={"Sign Up"}
 						onClick={signup}

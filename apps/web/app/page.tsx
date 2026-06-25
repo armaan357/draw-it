@@ -46,7 +46,7 @@ export default function LandingPage() {
 				<div className="container flex h-16 items-center justify-between">
 					<div className="flex items-center gap-2">
 						<Link href="/" className="flex items-center gap-2">
-							<Shapes className="h-8 w-8 text-purple-500" />
+							<Shapes className="h-8 w-8 text-[rgb(var(--color-accent-rgb))]" />
 							<span className="font-heading text-2xl font-bold">
 								Draw It
 							</span>
@@ -67,7 +67,6 @@ export default function LandingPage() {
 								<Button
 									variant="primary"
 									size="sm"
-									className="bg-purple-600 hover:bg-purple-700"
 									children="Sign Up"
 								/>
 							</Link>
@@ -103,13 +102,24 @@ export default function LandingPage() {
 				<div className="grid gap-10 lg:grid-cols-[1fr_400px] lg:gap-12 xl:grid-cols-[1fr_600px]">
 					<div className="flex flex-col justify-center space-y-6">
 						<div className="space-y-4">
-							<h1 className="font-heading text-4xl font-bold tracking-tight sm:text-5xl xl:text-6xl/none">
-								Create, Collaborate,
-								<span className="text-purple-500 block mt-1">
-									Share Your Ideas
-								</span>
-							</h1>
-							<p className="max-w-[600px] text-zinc-300 text-lg md:text-xl leading-relaxed">
+							<div className="relative hero-animate">
+								<div
+									aria-hidden
+									className="pointer-events-none absolute -left-10 -top-12 w-[60%] h-[60%] rounded-3xl blur-3xl opacity-30 -z-10"
+									style={{
+										background:
+											"radial-gradient(closest-corner, rgba(var(--color-accent-rgb), 0.18), transparent 35%)",
+										transform: "rotate(-6deg)",
+									}}
+								/>
+								<h1 className="font-heading font-extrabold tracking-tight text-[clamp(2.25rem,6.5vw,4.25rem)] leading-tight">
+									Create, Collaborate,
+									<span className="block mt-1 text-[rgb(var(--color-accent-rgb))] text-[clamp(2rem,5.5vw,3rem)]">
+										Share Your Ideas
+									</span>
+								</h1>
+							</div>
+							<p className="max-w-[600px] text-[rgba(var(--content-inverted),0.9)] text-lg md:text-xl leading-relaxed">
 								A powerful virtual whiteboard for sketching
 								diagrams, wireframes, and illustrations.
 								Collaborate in real-time with your team and
@@ -117,11 +127,11 @@ export default function LandingPage() {
 							</p>
 
 							<div className="flex flex-wrap gap-3 pt-2">
-								<div className="flex items-center gap-2 bg-zinc-800/50 px-3 py-1 rounded-full text-sm text-zinc-300">
-									<Pencil className="h-4 w-4 text-purple-400" />
+								<div className="flex items-center gap-2 bg-zinc-800/50 px-3 py-1 rounded-full text-sm text-[rgba(var(--content-inverted),0.9)]">
+									<Pencil className="h-4 w-4 text-[rgba(var(--color-accent-rgb),0.9)]" />
 									<span>Intuitive Drawing</span>
 								</div>
-								<div className="flex items-center gap-2 bg-zinc-800/50 px-3 py-1 rounded-full text-sm text-zinc-300">
+								<div className="flex items-center gap-2 bg-zinc-800/50 px-3 py-1 rounded-full text-sm text-[rgba(var(--content-inverted),0.9)]">
 									<Users className="h-4 w-4 text-blue-400" />
 									<span>Real-time Collaboration</span>
 								</div>
@@ -132,7 +142,7 @@ export default function LandingPage() {
 								<Button
 									variant="primary"
 									size="lg"
-									className="bg-purple-600 hover:bg-purple-700 transition-all group"
+									className="transition-all group"
 									children={
 										<>
 											Start Drawing
@@ -149,7 +159,7 @@ export default function LandingPage() {
 									children={
 										<>
 											Collaborate Live
-											<Radio className="mr-2 h-4 w-4" />
+											<Radio className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
 										</>
 									}
 								/>
@@ -162,7 +172,7 @@ export default function LandingPage() {
 									children={
 										<>
 											View on GitHub
-											<GithubIcon className="mr-2 h-4 w-4" />
+											<GithubIcon className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
 										</>
 									}
 								/>
@@ -170,11 +180,11 @@ export default function LandingPage() {
 						</div>
 					</div>
 					<div className="mx-auto flex w-full items-center justify-center lg:justify-end">
-						<div className="relative h-[300px] w-full overflow-hidden rounded-lg border border-zinc-800 bg-zinc-950 p-2 md:h-[400px] group shadow-lg shadow-purple-500/5">
+						<div className="relative h-[300px] w-full overflow-hidden rounded-lg border border-zinc-800 bg-zinc-950 p-2 md:h-[400px] group shadow-lg">
 							{/* Canvas Preview */}
 							<div className="absolute inset-0 flex items-center justify-center">
 								<div className="grid grid-cols-2 gap-4 p-4">
-									<div className="h-20 w-20 rounded-md bg-purple-500/20 border border-purple-500/30 transition-transform group-hover:rotate-3 duration-300"></div>
+									<div className="h-20 w-20 rounded-md bg-[#fb2c36]/20 border border-[#fb2c36]/30 transition-transform group-hover:rotate-3 duration-300"></div>
 									<div className="h-20 w-20 rounded-full bg-blue-500/20 border border-blue-500/30 transition-transform group-hover:-rotate-3 duration-300"></div>
 									<div className="h-20 w-40 col-span-2 rounded-lg bg-green-500/20 border border-green-500/30 transition-transform group-hover:translate-y-1 duration-300"></div>
 									<div className="h-1 w-32 col-span-2 bg-zinc-700 transition-transform group-hover:translate-x-2 duration-300"></div>
@@ -187,7 +197,7 @@ export default function LandingPage() {
 								<Button
 									size="icon"
 									variant="ghost"
-									className="h-8 w-8 rounded-full bg-zinc-800/80 hover:bg-purple-500/20 hover:text-purple-400 transition-colors"
+									className="h-8 w-8 rounded-full bg-zinc-800/80 hover:bg-[#fb2c36]/15 hover:text-[#fb2c36] transition-colors"
 									children={<Pencil className="h-4 w-4" />}
 								/>
 								<Button
@@ -224,38 +234,38 @@ export default function LandingPage() {
 						<h2 className="font-heading text-3xl font-bold leading-tight sm:text-4xl md:text-5xl">
 							Powerful features for your creativity
 						</h2>
-						<p className="max-w-[85%] leading-relaxed text-zinc-300 text-lg">
+						<p className="max-w-[85%] leading-relaxed text-[rgba(var(--content-inverted),0.9)] text-lg">
 							Everything you need to create beautiful sketches and
 							collaborate with your team.
 						</p>
 					</div>
 
-					<div className="mx-auto grid justify-center gap-6 sm:grid-cols-2 md:max-w-[64rem] md:grid-cols-3 lg:gap-10">
+					<div className="mx-auto grid justify-center gap-6 sm:grid-cols-2 md:max-w-[64rem] md:grid-cols-3 lg:gap-10 stagger">
 						{/* Feature 1 */}
-						<div className="relative overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900/50 p-8 transition-all duration-300 hover:border-purple-500/30 group">
-							<div className="flex h-14 w-14 items-center justify-center rounded-full bg-purple-500/10 text-purple-500 mb-5 transition-transform group-hover:scale-110 duration-300">
+						<div className="relative overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900/50 p-8 transition-all duration-300 hover:border-[rgba(var(--color-accent-rgb),0.18)] group">
+							<div className="flex h-14 w-14 items-center justify-center rounded-full bg-[rgba(var(--color-accent-rgb),0.08)] text-[rgb(var(--color-accent-rgb))] mb-5 transition-transform group-hover:scale-110 duration-300">
 								<Pencil className="h-7 w-7" />
 							</div>
 							<h3 className="text-xl font-heading font-bold mb-3">
 								Intuitive Drawing
 							</h3>
-							<p className="text-zinc-300 leading-relaxed">
+							<p className="text-[rgba(var(--content-inverted),0.9)] leading-relaxed">
 								Simple yet powerful drawing tools that feel
 								natural and responsive. Create sketches that
 								look hand-drawn.
 							</p>
 							<div className="mt-5">
-								<Button
+								{/* <Button
 									variant="link"
 									size="lg"
-									className="p-0 h-auto text-purple-400 group-hover:text-purple-300 transition-colors"
+									className="p-0 h-auto text-[rgba(var(--color-accent-rgb),0.85)] group-hover:text-[rgba(var(--color-accent-rgb),0.7)] transition-colors"
 									children={
 										<>
 											Learn more
 											<ArrowRight className="ml-1 h-3 w-3 inline" />
 										</>
 									}
-								/>
+								/> */}
 							</div>
 						</div>
 
@@ -267,13 +277,13 @@ export default function LandingPage() {
 							<h3 className="text-xl font-heading font-bold mb-3">
 								Real-time Collaboration
 							</h3>
-							<p className="text-zinc-300 leading-relaxed">
+							<p className="text-[rgba(var(--content-inverted),0.9)] leading-relaxed">
 								Work together with your team in real-time. See
 								changes as they happen and collaborate
 								seamlessly.
 							</p>
 							<div className="mt-5">
-								<Button
+								{/* <Button
 									variant="link"
 									size="lg"
 									className="p-0 h-auto text-blue-400 group-hover:text-blue-300 transition-colors"
@@ -283,7 +293,7 @@ export default function LandingPage() {
 											<ArrowRight className="ml-1 h-3 w-3 inline" />
 										</>
 									}
-								/>
+								/> */}
 							</div>
 						</div>
 
@@ -295,31 +305,31 @@ export default function LandingPage() {
 							<h3 className="text-xl font-heading font-bold mb-3">
 								Open Source
 							</h3>
-							<p className="text-zinc-300 leading-relaxed">
+							<p className="text-[rgba(var(--content-inverted),0.9)] leading-relaxed">
 								100% open source—explore the code, contribute,
 								or star us on&nbsp;
 								<a
 									href="https://github.com/armaan357/draw-it"
 									target="_blank"
 									rel="noopener noreferrer"
-									className="hover:underline duration-200 hover:text-green-300 transition-colors"
+									className="hover:underline duration-200 hover:text-green-300 transition-colors underline"
 								>
 									GitHub
 								</a>
 								.
 							</p>
 							<div className="mt-5">
-								<Button
+								{/* <Button
 									variant="link"
 									size="lg"
-									className="p-0 h-auto text-green-400 group-hover:text-green-300 transition-colors"
+									className="p-0 h-auto group-hover:text-green-300 transition-colors"
 									children={
 										<>
 											Learn more
 											<ArrowRight className="ml-1 h-3 w-3 inline" />
 										</>
 									}
-								/>
+								/> */}
 							</div>
 						</div>
 
@@ -331,23 +341,23 @@ export default function LandingPage() {
 							<h3 className="text-xl font-heading font-bold mb-3">
 								Easy Sharing
 							</h3>
-							<p className="text-zinc-300 leading-relaxed">
+							<p className="text-[rgba(var(--content-inverted),0.9)] leading-relaxed">
 								Share your drawings with a simple link. Just
 								Login and share. Perfect for quick
 								collaboration.
 							</p>
 							<div className="mt-5">
-								<Button
+								{/* <Button
 									variant="link"
 									size="lg"
-									className="p-0 h-auto text-yellow-400 group-hover:text-yellow-300 transition-colors"
+									className="p-0 h-auto group-hover:text-yellow-200 transition-colors"
 									children={
 										<>
 											Learn more
 											<ArrowRight className="ml-1 h-3 w-3 inline" />
 										</>
 									}
-								/>
+								/> */}
 							</div>
 						</div>
 
@@ -359,12 +369,12 @@ export default function LandingPage() {
 							<h3 className="text-xl font-heading font-bold mb-3">
 								Export Options
 							</h3>
-							<p className="text-zinc-300 leading-relaxed">
+							<p className="text-[rgba(var(--content-inverted),0.9)] leading-relaxed">
 								Export your drawings as PNG, SVG, or even as a
 								shareable link. Use your creations anywhere.
 							</p>
 							<div className="mt-5">
-								<Button
+								{/* <Button
 									variant="link"
 									size="lg"
 									className="p-0 h-auto text-red-400 group-hover:text-red-300 transition-colors"
@@ -374,7 +384,7 @@ export default function LandingPage() {
 											<ArrowRight className="ml-1 h-3 w-3 inline" />
 										</>
 									}
-								/>
+								/> */}
 							</div>
 						</div>
 
@@ -386,13 +396,13 @@ export default function LandingPage() {
 							<h3 className="text-xl font-heading font-bold mb-3">
 								Libraries & Templates
 							</h3>
-							<p className="text-zinc-300 leading-relaxed">
+							<p className="text-[rgba(var(--content-inverted),0.9)] leading-relaxed">
 								Access a wide range of shapes, templates, and
 								libraries to speed up your work and enhance
 								creativity.
 							</p>
 							<div className="mt-5">
-								<Button
+								{/* <Button
 									variant="link"
 									size="lg"
 									className="p-0 h-auto text-indigo-400 group-hover:text-indigo-300 transition-colors"
@@ -402,7 +412,7 @@ export default function LandingPage() {
 											<ArrowRight className="ml-1 h-3 w-3 inline" />
 										</>
 									}
-								/>
+								/> */}
 							</div>
 						</div>
 					</div>
@@ -415,7 +425,7 @@ export default function LandingPage() {
 					<h2 className="font-heading text-3xl font-bold leading-tight sm:text-4xl md:text-5xl">
 						Perfect for every creative need
 					</h2>
-					<p className="max-w-[85%] leading-relaxed text-zinc-300 text-lg">
+					<p className="max-w-[85%] leading-relaxed text-[rgba(var(--content-inverted),0.9)] text-lg">
 						From wireframes to diagrams, our tool adapts to your
 						creative process.
 					</p>
@@ -423,16 +433,16 @@ export default function LandingPage() {
 
 				<div className="grid md:grid-cols-3 gap-8">
 					{/* Use Case 1 */}
-					<div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-6 transition-all hover:border-purple-500/20 hover:bg-zinc-900/70">
+					<div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-6 transition-all hover:border-[rgba(var(--color-accent-rgb),0.12)] hover:bg-zinc-900/70">
 						<div className="flex items-center gap-3 mb-4">
-							<div className="bg-purple-500/10 text-purple-500 p-2 rounded-lg">
+							<div className="bg-[rgba(var(--color-accent-rgb),0.08)] text-[rgb(var(--color-accent-rgb))] p-2 rounded-lg">
 								<Code className="h-5 w-5" />
 							</div>
 							<h3 className="font-heading font-bold text-lg">
 								UI/UX Design
 							</h3>
 						</div>
-						<p className="text-zinc-300">
+						<p className="text-[rgba(var(--content-inverted),0.9)]">
 							Create wireframes and mockups for your next digital
 							product with our intuitive tools.
 						</p>
@@ -448,7 +458,7 @@ export default function LandingPage() {
 								Team Brainstorming
 							</h3>
 						</div>
-						<p className="text-zinc-300">
+						<p className="text-[rgba(var(--content-inverted),0.9)]">
 							Collaborate with your team in real-time to generate
 							and visualize ideas together.
 						</p>
@@ -464,7 +474,7 @@ export default function LandingPage() {
 								Remote Workshops
 							</h3>
 						</div>
-						<p className="text-zinc-300">
+						<p className="text-[rgba(var(--content-inverted),0.9)]">
 							Run engaging remote workshops with a shared visual
 							canvas that everyone can contribute to.
 						</p>
@@ -479,7 +489,7 @@ export default function LandingPage() {
 						<h2 className="font-heading text-3xl font-bold leading-tight sm:text-4xl md:text-5xl">
 							Ready to start drawing?
 						</h2>
-						<p className="max-w-[85%] leading-relaxed text-zinc-300 text-lg">
+						<p className="max-w-[85%] leading-relaxed text-[rgba(var(--content-inverted),0.9)] text-lg">
 							Try our platform today. No sign-up required. It's
 							completely free for personal use.
 						</p>
@@ -488,7 +498,7 @@ export default function LandingPage() {
 								<Button
 									variant="primary"
 									size="lg"
-									className="bg-purple-600 hover:bg-purple-700 transition-all group"
+									className="transition-all group"
 									children={
 										<>
 											Start Drawing Now

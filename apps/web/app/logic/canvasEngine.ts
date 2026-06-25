@@ -68,6 +68,7 @@ export class CanvasEngine {
 	}
 
 	handleMouseDown = (e: MouseEvent) => {
+		console.log("mouse button in mouseDown = ", e.button);
 		if (this.state.currentTool === "drag") {
 			this.userAction = "drag";
 			this.screenCoordinates = {
@@ -291,6 +292,7 @@ export class CanvasEngine {
 			this.refs.zoomRef.current,
 			this.refs.offsetXRef.current,
 			this.refs.offsetYRef.current,
+			this.actions.changeTool,
 		);
 	};
 

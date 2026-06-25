@@ -1,5 +1,10 @@
 :root {
   --bg-default: 0 0 0;
+  /* Semantic color tokens (RGB triples for Tailwind rgb(var(--...) usage) */
+  --color-accent: 105 101 219; /* #6965db */
+  --content-inverted: 255 255 255; /* white text on dark */
+  --content-default: 64 64 64; /* default body text (used for light surfaces) */
+  --focus-ring: 105 101 219; /* accent-based focus ring */
   --bg-info: 29 78 216;
   --bg-success: 21 128 61;
   --bg-attention: 194 65 12;

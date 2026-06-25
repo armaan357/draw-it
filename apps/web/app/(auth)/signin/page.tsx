@@ -56,14 +56,15 @@ export default function SignIn() {
 						<Button
 							variant="secondary"
 							size="md"
-							children={"Log In"}
+							children={"Sign Up"}
 						/>
 					</Link>
 				</div>
 			</div>
 			<div className="w-full sm:w-md mx-auto flex flex-col justify-center items-center gap-6 border-none py-7 px-3">
-				<div>
-					<h1 className="text-2xl font-semibold">Sign In</h1>
+				<div className="relative w-full">
+					<div aria-hidden className="absolute -inset-x-6 -top-8 h-40 rounded-2xl blur-2xl opacity-25" style={{background: 'radial-gradient(closest-corner, rgba(var(--color-accent-rgb),0.18), transparent 40%)'}} />
+					<h1 className="text-3xl md:text-4xl font-extrabold">Sign In</h1>
 				</div>
 				<div className="flex flex-col w-full gap-5 justify-center items-center max-w-sm">
 					<InputBox
@@ -85,7 +86,7 @@ export default function SignIn() {
 					<Button
 						variant="primary"
 						size="full"
-						className="bg-purple-600 hover:bg-purple-700 w-full"
+						className="w-full"
 						children={"Log In"}
 						onClick={signin}
 					/>

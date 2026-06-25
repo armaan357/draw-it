@@ -2,6 +2,10 @@
 :root {
     --foreground: #ffffff;
     --background: #171717;
+  /* Semantic runtime tokens (RGB triples for use with rgba(var(--...))) */
+  --color-accent-rgb: 105 101 219; /* #6965db */
+  --focus-ring-rgb: 105 101 219;
+  --content-inverted: #ffffff;
 }
 
 /* @font-face {
@@ -53,6 +57,16 @@ a {
   text-decoration: none;
 }
 
+/* Accessible focus styles using the brand accent */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: 3px solid rgba(var(--focus-ring-rgb), 0.18);
+  outline-offset: 2px;
+}
+
 .imgDark {
   display: none;
 }
@@ -68,4 +82,76 @@ a {
   .imgDark {
     display: unset;
   }
-} */
+} 
+
+:root {
+  --bg-default: 0 0 0;
+  /* Semantic color tokens (RGB triples for Tailwind rgb(var(--...) usage) */
+  --color-accent: 105 101 219; /* #6965db */
+  --content-inverted: 255 255 255; /* white text on dark */
+  --content-default: 64 64 64; /* default body text (used for light surfaces) */
+  --focus-ring: 105 101 219; /* accent-based focus ring */
+  --bg-info: 29 78 216;
+  --bg-success: 21 128 61;
+  --bg-attention: 194 65 12;
+  --bg-error: 185 28 28;
+
+  --content-info: 191 219 254;
+  --content-success: 220 252 231;
+  --content-attention: 255 237 213;
+  --content-error: 254 226 226;
+}
+
+/* Animation easings */
+:root {
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes hero-enter {
+  0% { opacity: 0; transform: translateY(18px) scale(.995); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes fade-up {
+  0% { opacity: 0; transform: translateY(12px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+.hero-animate {
+  animation: hero-enter 620ms var(--ease-out-expo) both;
+}
+
+.stagger > * {
+  opacity: 0;
+  transform: translateY(12px);
+  animation: fade-up 420ms var(--ease-out-quart) both;
+  animation-delay: calc(var(--i, 0) * 80ms);
+}
+.stagger > *:nth-child(1){ --i: 0 }
+.stagger > *:nth-child(2){ --i: 1 }
+.stagger > *:nth-child(3){ --i: 2 }
+.stagger > *:nth-child(4){ --i: 3 }
+.stagger > *:nth-child(5){ --i: 4 }
+.stagger > *:nth-child(6){ --i: 5 }
+
+/* Button micro-interactions */
+.btn-interactive {
+  will-change: transform, box-shadow;
+  transition: transform 180ms var(--ease-out-quart), box-shadow 180ms var(--ease-out-quart);
+}
+.btn-interactive:hover { transform: translateY(-3px) scale(1.02); }
+.btn-interactive:active { transform: translateY(0) scale(0.985); }
+.btn-interactive:focus-visible { box-shadow: 0 12px 40px rgba(var(--color-accent-rgb), 0.12); }
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-animate,
+  .stagger > *,
+  .btn-interactive {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    transform: none !important;
+  }
+}
+

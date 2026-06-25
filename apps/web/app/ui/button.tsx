@@ -2,10 +2,11 @@
 import { ReactNode } from "react";
 
 const buttonVariant = {
-	primary: "border-0 text-white",
+	primary:
+		"bg-[rgb(var(--color-accent))] hover:brightness-90 text-[rgb(var(--content-inverted))] ",
 	secondary:
 		"border text-white border-[#f5f5f5]/20 bg-white/4 hover:bg-white/6",
-	outline: "border border-indigo-300 text-purple-700",
+	outline: "border border-indigo-300 text-[rgb(var(--color-accent))]",
 	ghost: "border-0 text-white",
 	link: "border-0 text-white underline",
 };
@@ -32,7 +33,7 @@ export function Button(props: ButtonInterface) {
     return (
 		<button
 			style={{ height: "36px" }}
-			className={`${buttonVariant[props.variant]} ${props.className} ${buttonSize[props.size]} transition-all duration-200 ease-in-out flex items-center justify-center cursor-pointer focus-within:outline-none outline-none select-none`}
+			className={`${buttonVariant[props.variant]} ${props.className} ${buttonSize[props.size]} transition-all duration-200 ease-in-out transform-gpu flex items-center justify-center cursor-pointer select-none`}
 			onClick={props.onClick}
 			onSubmit={props.onSubmit}
 		>

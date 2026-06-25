@@ -25,6 +25,7 @@ export type EngineRefsArgumentType = {
 };
 
 export type EngineActionsArgumentType = {
+	changeTool: (tool: allToolsType) => void;
 	addShapes: (newShape: shapesType) => void;
 	removeShape: (id: string) => void;
 	repositionShape: (
